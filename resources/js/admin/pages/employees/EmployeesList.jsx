@@ -292,7 +292,14 @@ export default function EmployeesList() {
                                                     )}
                                                 </td>
                                                 <td className="p-3 text-sm font-medium">{employee.employee_id}</td>
-                                                <td className="p-3 text-sm">{employee.full_name}</td>
+                                                <td className="p-3 text-sm">
+                                                    <Link
+                                                        to={`/employees/${employee.id}`}
+                                                        className="text-primary hover:underline font-medium"
+                                                    >
+                                                        {employee.full_name}
+                                                    </Link>
+                                                </td>
                                                 <td className="p-3 text-sm">{employee.mobile_number}</td>
                                                 <td className="p-3 text-sm">{employee.email || 'N/A'}</td>
                                                 <td className="p-3 text-sm">{employee.job_title || 'N/A'}</td>

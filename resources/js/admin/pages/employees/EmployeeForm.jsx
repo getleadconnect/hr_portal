@@ -571,7 +571,7 @@ export default function EmployeeForm() {
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select relationship" />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className="max-h-[200px] overflow-y-auto">
                                     <SelectItem value="Father">Father</SelectItem>
                                     <SelectItem value="Mother">Mother</SelectItem>
                                     <SelectItem value="Husband">Husband</SelectItem>
