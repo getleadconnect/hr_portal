@@ -16,6 +16,8 @@ import UsersList from './pages/users/UsersList';
 import UserForm from './pages/users/UserForm';
 import UserDetails from './pages/users/UserDetails';
 import JobCategoriesList from './pages/job-categories/JobCategoriesList';
+import AttendanceList from './pages/attendance/AttendanceList';
+import LeaveRequestList from './pages/leave-requests/LeaveRequestList';
 import Settings from './pages/Settings';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -47,6 +49,8 @@ function getPageTitle(pathname) {
         return 'Employee Details';
     }
     if (pathname.startsWith('/employees')) return 'Employees';
+    if (pathname.startsWith('/attendance')) return 'Attendance';
+    if (pathname.startsWith('/leave-requests')) return 'Leave Requests';
     if (pathname.startsWith('/users')) return 'Users';
     if (pathname.startsWith('/job-categories')) return 'Job Categories';
     if (pathname.startsWith('/settings')) return 'Settings';
@@ -96,6 +100,10 @@ function App() {
                                     <Route path="/users/:id/edit" element={<UserForm />} />
 
                                     <Route path="/job-categories" element={<JobCategoriesList />} />
+
+                                    <Route path="/attendance" element={<AttendanceList />} />
+
+                                    <Route path="/leave-requests" element={<LeaveRequestList />} />
 
                                     <Route path="/settings" element={<Settings />} />
                                 </Routes>

@@ -11,7 +11,8 @@ import {
     ChevronDown,
     ChevronRight,
     User,
-    KeyRound
+    KeyRound,
+    CalendarCheck
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../ui/button';
@@ -35,7 +36,15 @@ const menuItems = [
             { path: '/openings', label: 'Openings' }
         ]
     },
-    { path: '/employees', label: 'Employees', icon: Users },
+    {
+        label: 'Employees',
+        icon: Users,
+        children: [
+            { path: '/employees', label: 'Employee List' },
+            { path: '/attendance', label: 'Attendance' },
+            { path: '/leave-requests', label: 'Leave Requests' }
+        ]
+    },
     { path: '/settings', label: 'Settings', icon: SettingsIcon },
 ];
 

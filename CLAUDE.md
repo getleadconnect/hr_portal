@@ -941,3 +941,241 @@ This ensures consistent padding across all list pages in the application.
 - Full-width buttons on mobile, auto-width on desktop
 
 **Note**: Other settings sub-pages (Job Categories, Departments, Designations, Qualifications) still use table layouts with horizontal scroll. These can be updated with card views following the UserSettings pattern if needed.
+
+### November 28, 2025
+
+#### 1. Navigation Menu - Employees Dropdown Structure
+**File**: `resources/js/admin/components/layouts/AdminLayout.jsx`
+
+Changed "Employees" from a single menu item to a dropdown menu with sub-options:
+
+**Before**:
+```jsx
+{ path: '/employees', label: 'Employees', icon: Users },
+{ path: '/attendance', label: 'Attendance', icon: CalendarCheck },
+```
+
+**After**:
+```jsx
+{
+    label: 'Employees',
+    icon: Users,
+    children: [
+        { path: '/employees', label: 'Employee List' },
+        { path: '/attendance', label: 'Attendance' },
+        { path: '/leave-requests', label: 'Leave Requests' }
+    ]
+},
+```
+
+**Menu Structure**:
+```
+Dashboard
+Jobs ▼
+  ├── Applications
+  └── Openings
+Employees ▼
+  ├── Employee List
+  ├── Attendance
+  └── Leave Requests
+Settings
+```
+
+#### 2. Attendance List - DataTableControls Added
+**File**: `resources/js/admin/pages/attendance/AttendanceList.jsx`
+
+Added DataTableControls component for consistent table UX with "Show entries" dropdown and search box.
+
+**Layout Order**:
+1. Department filter dropdown
+2. Status filter dropdown
+3. DataTableControls (Show entries + Search)
+4. Data table
+
+**Code Changes**:
+- Added import: `import DataTableControls from '../../components/DataTableControls';`
+- Replaced inline search input with DataTableControls component
+- Moved filters above DataTableControls
+
+```jsx
+<CardHeader className="space-y-4 p-3">
+    {/* Filters - Department and Status */}
+    <div className="flex flex-wrap items-center gap-3">
+        <Select value={departmentId} ...>
+            {/* All Departments dropdown */}
+        </Select>
+        <Select value={statusFilter} ...>
+            {/* All Status dropdown */}
+        </Select>
+    </div>
+    {/* DataTable Controls - Show entries and Search */}
+    <DataTableControls
+        perPage={perPage}
+        onPerPageChange={(value) => { setPerPage(value); setPage(1); }}
+        search={search}
+        onSearchChange={(value) => { setSearch(value); setPage(1); }}
+        searchPlaceholder="Search employees..."
+    />
+</CardHeader>
+```
+
+#### 3. Leave Requests - New Feature
+Added complete Leave Requests management module for employee leave tracking.
+
+**Database Table**: `leave_requests`
+```sql
+CREATE TABLE leave_requests (
+    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    employee_id BIGINT UNSIGNED NOT NULL,
+    leave_type ENUM('Annual Leave', 'Sick Leave', 'Casual Leave') NOT NULL,
+    from_date DATE NOT NULL,
+    to_date DATE NOT NULL,
+    days INT NOT NULL,
+    reason TEXT NULL,
+    status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+    approved_by INT UNSIGNED NULL,
+    approved_at TIMESTAMP NULL,
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL,
+    deleted_at TIMESTAMP NULL,
+    FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+    FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL
+);
+```
+
+**Model**: `app/Models/LeaveRequest.php`
+- Uses SoftDeletes
+- Status constants: `STATUS_PENDING`, `STATUS_APPROVED`, `STATUS_REJECTED`
+- Leave type constants: `TYPE_ANNUAL`, `TYPE_SICK`, `TYPE_CASUAL`
+- Relationships: `employee()`, `approver()`
+- Validation rules: `createRules()`, `updateRules($id)`
+- Scopes: `scopeByStatus()`, `scopeByEmployee()`, `scopeByLeaveType()`
+
+**Controller**: `app/Http/Controllers/Api/Admin/LeaveRequestController.php`
+- `index()` - List with filters (status, leave_type, department_id) and search
+- `store()` - Create new leave request with overlap check
+- `show()` - View single leave request
+- `update()` - Update (only pending requests can be updated)
+- `destroy()` - Delete leave request
+- `approve()` - Approve pending request (sets approved_by, approved_at)
+- `reject()` - Reject pending request
+- `getEmployees()` - Get active employees for dropdown
+
+**API Routes** (in `routes/api.php`):
+```php
+// Leave Requests
+Route::get('/leave-requests', [LeaveRequestController::class, 'index']);
+Route::post('/leave-requests', [LeaveRequestController::class, 'store']);
+Route::get('/leave-requests/employees', [LeaveRequestController::class, 'getEmployees']);
+Route::get('/leave-requests/{id}', [LeaveRequestController::class, 'show']);
+Route::put('/leave-requests/{id}', [LeaveRequestController::class, 'update']);
+Route::delete('/leave-requests/{id}', [LeaveRequestController::class, 'destroy']);
+Route::patch('/leave-requests/{id}/approve', [LeaveRequestController::class, 'approve']);
+Route::patch('/leave-requests/{id}/reject', [LeaveRequestController::class, 'reject']);
+```
+
+**Frontend Page**: `resources/js/admin/pages/leave-requests/LeaveRequestList.jsx`
+
+**Features**:
+- List view with employee avatar/initials, leave type badge, dates, days, reason (with tooltip), status badge
+- Filters: Department and Leave Type dropdowns
+- Status filtering via clickable count tabs
+- DataTableControls: Show entries (10/25/50/100) and search box
+- Pagination
+- Add Leave Request dialog with:
+  - Employee dropdown
+  - Leave type selection (Annual/Sick/Casual)
+  - From date, To date (auto-calculates days)
+  - Reason textarea
+- Edit Leave Request (only for pending requests)
+- Delete with confirmation
+- **Approve button** (green checkmark) - Shows confirmation dialog with leave details
+- **Reject button** (red X) - Shows confirmation dialog
+
+**Status Badges**:
+- PENDING: Yellow background (`bg-yellow-100 text-yellow-700`)
+- APPROVED: Green background (`bg-green-100 text-green-700`)
+- REJECTED: Red background (`bg-red-100 text-red-700`)
+
+**Leave Type Badges**:
+- Annual Leave: Blue background (`bg-blue-100 text-blue-700`)
+- Sick Leave: Orange background (`bg-orange-100 text-orange-700`)
+- Casual Leave: Purple background (`bg-purple-100 text-purple-700`)
+
+**React Router** (in `App.jsx`):
+```jsx
+import LeaveRequestList from './pages/leave-requests/LeaveRequestList';
+
+// In getPageTitle function:
+if (pathname.startsWith('/leave-requests')) return 'Leave Requests';
+
+// In Routes:
+<Route path="/leave-requests" element={<LeaveRequestList />} />
+```
+
+**Action Buttons Logic**:
+- Pending requests show: Approve, Reject, Edit, Delete buttons
+- Approved/Rejected requests show: Edit (disabled), Delete buttons
+- Only pending requests can be edited
+
+**Date Handling**:
+- Database format: `Y-m-d`
+- Display format: `d/m/Y`
+- Auto-calculate days between from_date and to_date (inclusive)
+
+**Overlap Check**:
+When creating a leave request, the system checks for overlapping leave requests for the same employee that are not rejected.
+
+**Status Count Tabs**:
+Status filter tabs are displayed below the "Leave Requests" title showing real-time counts:
+- All (total count)
+- Pending (count)
+- Approved (count)
+- Rejected (count)
+
+These tabs are clickable and filter the leave requests accordingly. The counts update dynamically based on department and leave type filters.
+
+**Table Columns**:
+1. Employee (with avatar/initials)
+2. Leave Type (badge)
+3. From Date
+4. To Date
+5. Days
+6. Reason (truncated with tooltip on hover - shows full text)
+7. Status (badge)
+8. Action (buttons)
+
+**Action Buttons with Tooltips**:
+All action buttons (Approve, Reject, Edit, Delete) now have tooltips:
+- Approve: Shows "Approve" tooltip
+- Reject: Shows "Reject" tooltip
+- Edit: Shows "Edit" or "Only pending requests can be edited" (when disabled)
+- Delete: Shows "Delete" tooltip
+
+### API Endpoints Reference Update
+
+#### Leave Requests
+- `GET /api/admin/leave-requests` - List leave requests (pagination, search, filters)
+- `POST /api/admin/leave-requests` - Create leave request
+- `GET /api/admin/leave-requests/employees` - Get active employees for dropdown
+- `GET /api/admin/leave-requests/{id}` - Get single leave request
+- `PUT /api/admin/leave-requests/{id}` - Update leave request (pending only)
+- `DELETE /api/admin/leave-requests/{id}` - Delete leave request
+- `PATCH /api/admin/leave-requests/{id}/approve` - Approve pending leave request
+- `PATCH /api/admin/leave-requests/{id}/reject` - Reject pending leave request
+
+### Database Schema Update
+
+#### leave_requests Table
+- `id` - Primary key
+- `employee_id` - FK to employees.id (CASCADE on delete)
+- `leave_type` - ENUM: 'Annual Leave', 'Sick Leave', 'Casual Leave'
+- `from_date` - DATE
+- `to_date` - DATE
+- `days` - INT (calculated from date range)
+- `reason` - TEXT (nullable)
+- `status` - ENUM: 'pending', 'approved', 'rejected' (default: pending)
+- `approved_by` - FK to users.id (SET NULL on delete)
+- `approved_at` - TIMESTAMP (nullable)
+- `created_at`, `updated_at` - Timestamps
+- `deleted_at` - Soft delete timestamp

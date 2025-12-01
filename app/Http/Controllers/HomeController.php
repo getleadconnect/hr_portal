@@ -10,6 +10,7 @@ use App\Facades\FileUpload;
 use App\Models\Application;
 use App\Models\JobCategory;
 use App\Services\ApiService;
+use App\Services\TelegramService;
 
 use Validator;
 use Session;
@@ -103,8 +104,13 @@ class HomeController extends Controller
 				
 				$apiService=new ApiService();
 				$api_result=$apiService->sendDataToCrm($data);
-				
+
 				\Log::info($api_result);
+
+				// Send Telegram notification
+				$telegramService = new TelegramService();
+				$telegramService->sendJobApplicationNotification($data);
+
 				return redirect('finish');
 			}
 			else

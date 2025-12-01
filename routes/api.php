@@ -12,6 +12,8 @@ use App\Http\Controllers\Api\Admin\DepartmentController;
 use App\Http\Controllers\Api\Admin\DesignationController;
 use App\Http\Controllers\Api\Admin\QualificationController;
 use App\Http\Controllers\Api\Admin\JobOpeningController;
+use App\Http\Controllers\Api\Admin\AttendanceController;
+use App\Http\Controllers\Api\Admin\LeaveRequestController;
 
 // Public routes
 Route::post('/admin/login', [AuthController::class, 'login']);
@@ -88,6 +90,26 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     Route::put('/job-openings/{id}', [JobOpeningController::class, 'update']);
     Route::delete('/job-openings/{id}', [JobOpeningController::class, 'destroy']);
     Route::patch('/job-openings/{id}/toggle-status', [JobOpeningController::class, 'toggleStatus']);
+
+    // Attendance
+    Route::get('/attendances', [AttendanceController::class, 'index']);
+    Route::post('/attendances', [AttendanceController::class, 'store']);
+    Route::get('/attendances/employees', [AttendanceController::class, 'getEmployeesForAttendance']);
+    Route::get('/attendances/export', [AttendanceController::class, 'exportReport']);
+    Route::post('/attendances/bulk', [AttendanceController::class, 'markBulk']);
+    Route::get('/attendances/{id}', [AttendanceController::class, 'show']);
+    Route::put('/attendances/{id}', [AttendanceController::class, 'update']);
+    Route::delete('/attendances/{id}', [AttendanceController::class, 'destroy']);
+
+    // Leave Requests
+    Route::get('/leave-requests', [LeaveRequestController::class, 'index']);
+    Route::post('/leave-requests', [LeaveRequestController::class, 'store']);
+    Route::get('/leave-requests/employees', [LeaveRequestController::class, 'getEmployees']);
+    Route::get('/leave-requests/{id}', [LeaveRequestController::class, 'show']);
+    Route::put('/leave-requests/{id}', [LeaveRequestController::class, 'update']);
+    Route::delete('/leave-requests/{id}', [LeaveRequestController::class, 'destroy']);
+    Route::patch('/leave-requests/{id}/approve', [LeaveRequestController::class, 'approve']);
+    Route::patch('/leave-requests/{id}/reject', [LeaveRequestController::class, 'reject']);
 
     // Get countries for dropdown
     Route::get('/countries', function () {
