@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Application;
+use App\Models\NotificationSetting;
 use Illuminate\Support\Facades\Storage;
+use App\Services\TelegramService;
 
 class ApplicationController extends Controller
 {
@@ -50,6 +52,7 @@ class ApplicationController extends Controller
                 'photo_url' => $app->photo ? config('constants.file_path') . $app->photo : null,
                 'cv_url' => $app->cv_file ? config('constants.file_path') . $app->cv_file : null,
                 'created_at' => $app->created_at->format('d-m-Y'),
+                'status' => $app->status ?? 'New',
             ];
         });
 
@@ -99,6 +102,7 @@ class ApplicationController extends Controller
             'photo_url' => $application->photo ? config('constants.file_path') . $application->photo : null,
             'cv_url' => $application->cv_file ? config('constants.file_path') . $application->cv_file : null,
             'created_at' => $application->created_at->format('d-m-Y H:i:s'),
+            'status' => $application->status ?? 'New',
         ];
 
         return response()->json([
@@ -132,6 +136,53 @@ class ApplicationController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Application deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        try {
+            $application = Application::find($id);
+
+            if (!$application) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Application not found'
+                ], 404);
+            }
+
+            $validStatuses = Application::$statuses;
+
+            if (!in_array($request->status, $validStatuses)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid status value'
+                ], 422);
+            }
+
+            $application->update(['status' => $request->status]);
+
+            // Send Telegram notification (except for "New" status) if enabled
+            if ($request->status !== 'New' && NotificationSetting::isStatusChangeNotificationEnabled()) {
+                $applicationWithCategory = Application::select('applications.*', 'job_category.category_name')
+                    ->leftJoin('job_category', 'applications.job_category_id', '=', 'job_category.id')
+                    ->where('applications.id', $id)
+                    ->first();
+
+                $telegramService = new TelegramService();
+                $telegramService->sendStatusChangeNotification($applicationWithCategory, $request->status);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Status updated successfully',
+                'data' => ['status' => $application->status]
             ]);
         } catch (\Exception $e) {
             return response()->json([

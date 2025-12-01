@@ -10,10 +10,23 @@ use Carbon\Carbon;
 class Application extends Model
 {
     use SoftDeletes;
-	
-	
-	protected $guarded = [];  
-	
+
+    // Status constants
+    const STATUS_NEW = 'New';
+    const STATUS_SHORT_LISTED = 'Short Listed';
+    const STATUS_APPOINTED = 'Appointed';
+    const STATUS_REJECTED = 'Rejected';
+
+    // Available statuses
+    public static $statuses = [
+        self::STATUS_NEW,
+        self::STATUS_SHORT_LISTED,
+        self::STATUS_APPOINTED,
+        self::STATUS_REJECTED,
+    ];
+
+	protected $guarded = [];
+
 	protected $primaryKey = 'id';
     protected $table = 'applications';
 

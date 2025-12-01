@@ -75,4 +75,81 @@ class TelegramService
 
         return $this->sendMessage($message);
     }
+
+    /**
+     * Send application status change notification
+     *
+     * @param object $application
+     * @param string $newStatus
+     * @return array|null
+     */
+    public function sendStatusChangeNotification($application, $newStatus)
+    {
+        $statusEmoji = $this->getStatusEmoji($newStatus);
+        $statusLabel = $this->getStatusLabel($newStatus);
+
+        $message = "{$statusEmoji} <b>Application Status Updated</b>\n\n";
+        $message .= "📋 <b>Status:</b> {$statusLabel}\n";
+        $message .= "━━━━━━━━━━━━━━━━━━\n";
+        $message .= "👤 <b>Name:</b> " . ($application->name ?? 'N/A') . "\n";
+        $message .= "📧 <b>Email:</b> " . ($application->email ?? 'N/A') . "\n";
+        $message .= "📱 <b>Mobile:</b> " . ($application->countrycode ?? '') . ($application->mobile ?? 'N/A') . "\n";
+        $message .= "💼 <b>Job Category:</b> " . ($application->category_name ?? 'N/A') . "\n";
+        $message .= "🎓 <b>Qualification:</b> " . ($application->qualification ?? 'N/A') . "\n";
+        $message .= "📅 <b>Experience:</b> " . ($application->experience ?? 'N/A');
+
+        if (!empty($application->experience_years)) {
+            $message .= " (" . $application->experience_years . " years)";
+        }
+
+        $message .= "\n💰 <b>Expected Salary:</b> " . ($application->expected_salary ?? 'N/A') . "\n";
+        $message .= "━━━━━━━━━━━━━━━━━━\n";
+        $message .= "⏰ <b>Updated At:</b> " . now()->format('d-m-Y h:i A');
+
+        return $this->sendMessage($message);
+    }
+
+    /**
+     * Get emoji based on status
+     *
+     * @param string $status
+     * @return string
+     */
+    private function getStatusEmoji($status)
+    {
+        switch ($status) {
+            case 'New':
+                return '🆕';
+            case 'Short Listed':
+                return '📝';
+            case 'Appointed':
+                return '✅';
+            case 'Rejected':
+                return '❌';
+            default:
+                return '📌';
+        }
+    }
+
+    /**
+     * Get formatted status label
+     *
+     * @param string $status
+     * @return string
+     */
+    private function getStatusLabel($status)
+    {
+        switch ($status) {
+            case 'New':
+                return '🔵 New';
+            case 'Short Listed':
+                return '🟡 Short Listed';
+            case 'Appointed':
+                return '🟢 Appointed';
+            case 'Rejected':
+                return '🔴 Rejected';
+            default:
+                return $status;
+        }
+    }
 }

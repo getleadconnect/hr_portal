@@ -9,6 +9,7 @@ use App\Facades\FileUpload;
 
 use App\Models\Application;
 use App\Models\JobCategory;
+use App\Models\NotificationSetting;
 use App\Services\ApiService;
 use App\Services\TelegramService;
 
@@ -107,9 +108,11 @@ class HomeController extends Controller
 
 				\Log::info($api_result);
 
-				// Send Telegram notification
-				$telegramService = new TelegramService();
-				$telegramService->sendJobApplicationNotification($data);
+				// Send Telegram notification if enabled
+				if (NotificationSetting::isEnabled(NotificationSetting::KEY_NEW_APPLICATION)) {
+					$telegramService = new TelegramService();
+					$telegramService->sendJobApplicationNotification($data);
+				}
 
 				return redirect('finish');
 			}

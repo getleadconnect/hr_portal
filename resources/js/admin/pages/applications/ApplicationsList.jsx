@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import api from '../../services/api';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
@@ -15,16 +16,50 @@ import DataTableControls from '../../components/DataTableControls';
 import Pagination from '../../components/Pagination';
 import { Eye, Trash2 } from 'lucide-react';
 
+const STATUS_OPTIONS = ['New', 'Short Listed', 'Appointed', 'Rejected'];
+
+const getStatusColor = (status) => {
+    switch (status) {
+        case 'New':
+            return 'bg-blue-100 text-blue-700 border-blue-300';
+        case 'Short Listed':
+            return 'bg-yellow-100 text-yellow-700 border-yellow-300';
+        case 'Appointed':
+            return 'bg-green-100 text-green-700 border-green-300';
+        case 'Rejected':
+            return 'bg-red-100 text-red-700 border-red-300';
+        default:
+            return 'bg-gray-100 text-gray-700 border-gray-300';
+    }
+};
+
 export default function ApplicationsList() {
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(10);
+    const queryClient = useQueryClient();
 
     // Filter states
     const [jobCategoryId, setJobCategoryId] = useState('');
     const [appliedFilters, setAppliedFilters] = useState({
         jobCategoryId: ''
     });
+
+    // Status update mutation
+    const statusMutation = useMutation({
+        mutationFn: ({ id, status }) => api.patch(`/admin/applications/${id}/status`, { status }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['applications'] });
+            toast.success('Status updated successfully');
+        },
+        onError: (error) => {
+            toast.error(error.response?.data?.message || 'Failed to update status');
+        }
+    });
+
+    const handleStatusChange = (id, newStatus) => {
+        statusMutation.mutate({ id, status: newStatus });
+    };
 
     // Fetch applications with filters
     const { data, isLoading } = useQuery({
@@ -222,6 +257,24 @@ export default function ApplicationsList() {
                                                     <span className="text-muted-foreground">No CV</span>
                                                 )}
                                             </div>
+                                            <div className="col-span-2">
+                                                <span className="text-muted-foreground">Status:</span>
+                                                <Select
+                                                    value={app.status || 'New'}
+                                                    onValueChange={(value) => handleStatusChange(app.id, value)}
+                                                >
+                                                    <SelectTrigger className={`w-full mt-1 h-8 text-xs ${getStatusColor(app.status || 'New')}`}>
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {STATUS_OPTIONS.map((status) => (
+                                                            <SelectItem key={status} value={status}>
+                                                                {status}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -241,6 +294,7 @@ export default function ApplicationsList() {
                                             <th className="px-2 py-2 text-left font-medium text-sm">Job_Category</th>
                                             <th className="px-2 py-2 text-left font-medium text-sm">Salary</th>
                                             <th className="px-2 py-2 text-left font-medium text-sm">CV_File</th>
+                                            <th className="px-2 py-2 text-left font-medium text-sm">Status</th>
                                             <th className="px-2 py-2 text-center font-medium text-sm">Action</th>
                                         </tr>
                                     </thead>
@@ -292,6 +346,23 @@ export default function ApplicationsList() {
                                                     ) : (
                                                         <span className="text-muted-foreground">N/A</span>
                                                     )}
+                                                </td>
+                                                <td className="px-2 py-2">
+                                                    <Select
+                                                        value={app.status || 'New'}
+                                                        onValueChange={(value) => handleStatusChange(app.id, value)}
+                                                    >
+                                                        <SelectTrigger className={`w-[130px] h-8 text-xs ${getStatusColor(app.status || 'New')}`}>
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {STATUS_OPTIONS.map((status) => (
+                                                                <SelectItem key={status} value={status}>
+                                                                    {status}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
                                                 </td>
                                                 <td className="px-2 py-2">
                                                     <DropdownMenu>

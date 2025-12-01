@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\Admin\QualificationController;
 use App\Http\Controllers\Api\Admin\JobOpeningController;
 use App\Http\Controllers\Api\Admin\AttendanceController;
 use App\Http\Controllers\Api\Admin\LeaveRequestController;
+use App\Http\Controllers\Api\Admin\NotificationSettingController;
 
 // Public routes
 Route::post('/admin/login', [AuthController::class, 'login']);
@@ -33,6 +34,7 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     Route::get('/applications', [ApplicationController::class, 'index']);
     Route::get('/applications/{id}', [ApplicationController::class, 'show']);
     Route::delete('/applications/{id}', [ApplicationController::class, 'destroy']);
+    Route::patch('/applications/{id}/status', [ApplicationController::class, 'updateStatus']);
 
     // Employees
     Route::get('/employees', [EmployeeController::class, 'index']);
@@ -110,6 +112,11 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     Route::delete('/leave-requests/{id}', [LeaveRequestController::class, 'destroy']);
     Route::patch('/leave-requests/{id}/approve', [LeaveRequestController::class, 'approve']);
     Route::patch('/leave-requests/{id}/reject', [LeaveRequestController::class, 'reject']);
+
+    // Notification Settings
+    Route::get('/notification-settings', [NotificationSettingController::class, 'index']);
+    Route::put('/notification-settings/{id}', [NotificationSettingController::class, 'update']);
+    Route::post('/notification-settings/toggle', [NotificationSettingController::class, 'toggle']);
 
     // Get countries for dropdown
     Route::get('/countries', function () {
