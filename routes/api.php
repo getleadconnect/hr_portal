@@ -15,6 +15,9 @@ use App\Http\Controllers\Api\Admin\JobOpeningController;
 use App\Http\Controllers\Api\Admin\AttendanceController;
 use App\Http\Controllers\Api\Admin\LeaveRequestController;
 use App\Http\Controllers\Api\Admin\NotificationSettingController;
+use App\Http\Controllers\Api\Admin\LeaveSettingController;
+use App\Http\Controllers\Api\Admin\UserDashboardController;
+use App\Http\Controllers\Api\Admin\EmployeeDocumentController;
 
 // Public routes
 Route::post('/admin/login', [AuthController::class, 'login']);
@@ -40,13 +43,21 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     Route::get('/employees', [EmployeeController::class, 'index']);
     Route::post('/employees', [EmployeeController::class, 'store']);
     Route::get('/employees/{id}/export-pdf', [EmployeeController::class, 'exportPdf']);
+    Route::get('/employees/{id}/attendance', [EmployeeController::class, 'getAttendanceHistory']);
+    Route::get('/employees/{id}/leaves', [EmployeeController::class, 'getLeaveHistory']);
     Route::get('/employees/{id}', [EmployeeController::class, 'show']);
     Route::post('/employees/{id}', [EmployeeController::class, 'update']);
     Route::delete('/employees/{id}', [EmployeeController::class, 'destroy']);
     Route::patch('/employees/{id}/toggle-status', [EmployeeController::class, 'toggleStatus']);
 
+    // Employee Documents
+    Route::get('/employees/{employeeId}/documents', [EmployeeDocumentController::class, 'index']);
+    Route::post('/employees/{employeeId}/documents', [EmployeeDocumentController::class, 'store']);
+    Route::delete('/employees/{employeeId}/documents/{documentId}', [EmployeeDocumentController::class, 'destroy']);
+
     // Users
     Route::get('/users', [UserController::class, 'index']);
+    Route::get('/users/employees-dropdown', [UserController::class, 'getEmployeesDropdown']);
     Route::post('/users', [UserController::class, 'store']);
     Route::get('/users/{id}', [UserController::class, 'show']);
     Route::put('/users/{id}', [UserController::class, 'update']);
@@ -118,8 +129,29 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     Route::put('/notification-settings/{id}', [NotificationSettingController::class, 'update']);
     Route::post('/notification-settings/toggle', [NotificationSettingController::class, 'toggle']);
 
+    // Leave Settings
+    Route::get('/leave-settings', [LeaveSettingController::class, 'index']);
+    Route::get('/leave-settings/available-types', [LeaveSettingController::class, 'getAvailableTypes']);
+    Route::post('/leave-settings', [LeaveSettingController::class, 'store']);
+    Route::get('/leave-settings/{id}', [LeaveSettingController::class, 'show']);
+    Route::put('/leave-settings/{id}', [LeaveSettingController::class, 'update']);
+    Route::delete('/leave-settings/{id}', [LeaveSettingController::class, 'destroy']);
+    Route::patch('/leave-settings/{id}/toggle-status', [LeaveSettingController::class, 'toggleStatus']);
+
     // Get countries for dropdown
     Route::get('/countries', function () {
         return response()->json(\App\Models\Country::all());
     });
+
+    // User Dashboard Routes (for staff users)
+    Route::get('/user/dashboard-stats', [UserDashboardController::class, 'getDashboardStats']);
+    Route::get('/user/profile', [UserDashboardController::class, 'getProfile']);
+    Route::get('/user/attendance', [UserDashboardController::class, 'getAttendance']);
+    Route::get('/user/attendance/calendar', [UserDashboardController::class, 'getCalendarAttendance']);
+    Route::post('/user/attendance/check-in', [UserDashboardController::class, 'checkIn']);
+    Route::post('/user/attendance/check-out', [UserDashboardController::class, 'checkOut']);
+    Route::get('/user/leave-requests', [UserDashboardController::class, 'getLeaveRequests']);
+    Route::post('/user/leave-requests', [UserDashboardController::class, 'createLeaveRequest']);
+    Route::delete('/user/leave-requests/{id}', [UserDashboardController::class, 'deleteLeaveRequest']);
+    Route::post('/user/change-password', [UserDashboardController::class, 'changePassword']);
 });

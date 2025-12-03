@@ -260,8 +260,8 @@
                 <td>{{ $employee->work_location ?? 'N/A' }}</td>
             </tr>
             <tr>
-                <td>Starting Salary:</td>
-                <td>{{ $employee->starting_salary ? '₹ ' . number_format($employee->starting_salary, 2) : 'N/A' }}</td>
+                <td>Salary:</td>
+                <td>{{ $employee->salary ? '₹ ' . number_format($employee->salary, 2) : 'N/A' }}</td>
             </tr>
         </table>
     </div>

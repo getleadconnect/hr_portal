@@ -27,7 +27,9 @@ import {
 import {
     Select,
     SelectContent,
+    SelectGroup,
     SelectItem,
+    SelectLabel,
     SelectTrigger,
     SelectValue,
 } from '../../components/ui/select';
@@ -55,12 +57,22 @@ export default function UserSettings() {
     const queryClient = useQueryClient();
 
     const [formData, setFormData] = useState({
+        employee_id: '',
         user_name: '',
         email: '',
         countrycode: '+91',
         mobile: '',
         password: '',
         role_id: '2',
+    });
+
+    // Fetch employees for dropdown
+    const { data: employeesData } = useQuery({
+        queryKey: ['employees-dropdown'],
+        queryFn: async () => {
+            const response = await api.get('/admin/users/employees-dropdown');
+            return response.data.data;
+        },
     });
 
     const { data, isLoading } = useQuery({
@@ -123,6 +135,7 @@ export default function UserSettings() {
 
     const resetForm = () => {
         setFormData({
+            employee_id: '',
             user_name: '',
             email: '',
             countrycode: '+91',
@@ -138,6 +151,7 @@ export default function UserSettings() {
         if (user) {
             setEditingUser(user);
             setFormData({
+                employee_id: user.employee_id?.toString() || '',
                 user_name: user.user_name || '',
                 email: user.email || '',
                 countrycode: user.countrycode || '+91',
@@ -150,6 +164,29 @@ export default function UserSettings() {
         }
         setIsDialogOpen(true);
     };
+
+    // Handle employee selection to populate form fields
+    const handleEmployeeChange = (employeeId) => {
+        setFormData(prev => ({ ...prev, employee_id: employeeId }));
+
+        if (employeeId) {
+            const selectedEmployee = employeesData?.find(emp => emp.id.toString() === employeeId);
+            if (selectedEmployee) {
+                setFormData(prev => ({
+                    ...prev,
+                    employee_id: employeeId,
+                    user_name: selectedEmployee.full_name || '',
+                    email: selectedEmployee.email || '',
+                    mobile: selectedEmployee.mobile_number || '',
+                    role_id: '3', // Auto-set to Staff when selecting employee
+                }));
+            }
+        }
+    };
+
+    // Separate employees into available and already linked groups
+    const availableEmployees = employeesData?.filter(emp => !emp.has_user) || [];
+    const linkedEmployees = employeesData?.filter(emp => emp.has_user) || [];
 
     const handleViewUser = async (userId) => {
         try {
@@ -206,6 +243,7 @@ export default function UserSettings() {
         switch(roleId) {
             case 1: return 'Admin';
             case 2: return 'User';
+            case 3: return 'Staff';
             default: return 'Unknown';
         }
     };
@@ -222,16 +260,60 @@ export default function UserSettings() {
                         <DialogTrigger asChild>
                             <Button onClick={() => handleOpenDialog()} className="w-full sm:w-auto">+ Add User</Button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-2xl">
+                        <DialogContent className="w-[400px] max-w-[95vw]">
                             <DialogHeader>
                                 <DialogTitle>{editingUser ? 'Edit User' : 'Add New User'}</DialogTitle>
                                 <DialogDescription>
                                     {editingUser ? 'Update user information' : 'Fill in the user details'}
                                 </DialogDescription>
                             </DialogHeader>
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div className="grid gap-4 md:grid-cols-2">
-                                    <div className="space-y-2">
+                            <form onSubmit={handleSubmit} className="space-y-3">
+                                {/* Employee Selection Dropdown */}
+                                <div className="space-y-1">
+                                    <Label htmlFor="employee_id">Select Employee (Optional)</Label>
+                                    <Select
+                                        key={`employee-${formData.employee_id || 'empty'}`}
+                                        value={formData.employee_id}
+                                        onValueChange={handleEmployeeChange}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select an employee" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {availableEmployees.length > 0 && (
+                                                <SelectGroup>
+                                                    <SelectLabel className="text-green-600 font-semibold">Available Employees</SelectLabel>
+                                                    {availableEmployees.map((employee) => (
+                                                        <SelectItem key={employee.id} value={employee.id.toString()}>
+                                                            {employee.full_name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectGroup>
+                                            )}
+                                            {linkedEmployees.length > 0 && (
+                                                <SelectGroup>
+                                                    <SelectLabel className="text-gray-400 font-semibold">Already Has User Account</SelectLabel>
+                                                    {linkedEmployees.map((employee) => (
+                                                        <SelectItem
+                                                            key={employee.id}
+                                                            value={employee.id.toString()}
+                                                            disabled={!editingUser || editingUser.employee_id !== employee.id}
+                                                            className="text-gray-400"
+                                                        >
+                                                            {employee.full_name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectGroup>
+                                            )}
+                                        </SelectContent>
+                                    </Select>
+                                    <p className="text-xs text-muted-foreground">
+                                        Selecting an employee will auto-fill details
+                                    </p>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <div className="space-y-1">
                                         <Label htmlFor="user_name">User Name *</Label>
                                         <Input
                                             id="user_name"
@@ -243,7 +325,7 @@ export default function UserSettings() {
                                         {errors.user_name && <p className="text-sm text-destructive">{errors.user_name[0]}</p>}
                                     </div>
 
-                                    <div className="space-y-2">
+                                    <div className="space-y-1">
                                         <Label htmlFor="email">Email *</Label>
                                         <Input
                                             id="email"
@@ -255,28 +337,29 @@ export default function UserSettings() {
                                         {errors.email && <p className="text-sm text-destructive">{errors.email[0]}</p>}
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="countrycode">Country Code</Label>
-                                        <Input
-                                            id="countrycode"
-                                            value={formData.countrycode}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, countrycode: e.target.value }))}
-                                            placeholder="+91"
-                                        />
+                                    <div className="grid grid-cols-3 gap-2">
+                                        <div className="space-y-1">
+                                            <Label htmlFor="countrycode">Code</Label>
+                                            <Input
+                                                id="countrycode"
+                                                value={formData.countrycode}
+                                                onChange={(e) => setFormData(prev => ({ ...prev, countrycode: e.target.value }))}
+                                                placeholder="+91"
+                                            />
+                                        </div>
+                                        <div className="space-y-1 col-span-2">
+                                            <Label htmlFor="mobile">Mobile Number *</Label>
+                                            <Input
+                                                id="mobile"
+                                                value={formData.mobile}
+                                                onChange={(e) => setFormData(prev => ({ ...prev, mobile: e.target.value }))}
+                                                required
+                                            />
+                                            {errors.mobile && <p className="text-sm text-destructive">{errors.mobile[0]}</p>}
+                                        </div>
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="mobile">Mobile Number *</Label>
-                                        <Input
-                                            id="mobile"
-                                            value={formData.mobile}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, mobile: e.target.value }))}
-                                            required
-                                        />
-                                        {errors.mobile && <p className="text-sm text-destructive">{errors.mobile[0]}</p>}
-                                    </div>
-
-                                    <div className="space-y-2">
+                                    <div className="space-y-1">
                                         <Label htmlFor="password">
                                             Password {editingUser ? '(leave blank to keep current)' : '*'}
                                         </Label>
@@ -291,7 +374,7 @@ export default function UserSettings() {
                                         {errors.password && <p className="text-sm text-destructive">{errors.password[0]}</p>}
                                     </div>
 
-                                    <div className="space-y-2">
+                                    <div className="space-y-1">
                                         <Label htmlFor="role_id">Role *</Label>
                                         <Select
                                             value={formData.role_id}
@@ -303,12 +386,13 @@ export default function UserSettings() {
                                             <SelectContent>
                                                 <SelectItem value="1">Admin</SelectItem>
                                                 <SelectItem value="2">User</SelectItem>
+                                                <SelectItem value="3">Staff</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
                                 </div>
 
-                                <div className="flex justify-end gap-2 pt-4">
+                                <div className="flex justify-end gap-2 pt-2">
                                     <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                                         Cancel
                                     </Button>
@@ -353,6 +437,7 @@ export default function UserSettings() {
                                     <table className="w-full">
                                         <thead>
                                             <tr className="border-b bg-muted/50">
+                                                <th className="p-3 text-left font-medium text-sm w-16">Sl.No</th>
                                                 <th className="p-3 text-left font-medium text-sm">Name</th>
                                                 <th className="p-3 text-left font-medium text-sm">Email</th>
                                                 <th className="p-3 text-left font-medium text-sm">Mobile</th>
@@ -363,8 +448,9 @@ export default function UserSettings() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {filteredUsers.map((user) => (
+                                            {filteredUsers.map((user, index) => (
                                                 <tr key={user.id} className="border-b hover:bg-muted/30">
+                                                    <td className="p-3 text-sm">{(page - 1) * perPage + index + 1}</td>
                                                     <td className="p-3 text-sm font-medium">{user.user_name}</td>
                                                     <td className="p-3 text-sm">{user.email}</td>
                                                     <td className="p-3 text-sm">{user.mobile}</td>
@@ -426,11 +512,14 @@ export default function UserSettings() {
 
                                 {/* Mobile Card View */}
                                 <div className="md:hidden space-y-3">
-                                    {filteredUsers.map((user) => (
+                                    {filteredUsers.map((user, index) => (
                                         <div key={user.id} className="border rounded-lg p-3 space-y-2 bg-card">
                                             <div className="flex items-start justify-between">
                                                 <div className="space-y-1 flex-1">
-                                                    <div className="font-medium text-sm">{user.user_name}</div>
+                                                    <div className="font-medium text-sm">
+                                                        <span className="text-muted-foreground mr-2">#{(page - 1) * perPage + index + 1}</span>
+                                                        {user.user_name}
+                                                    </div>
                                                     <div className="text-xs text-muted-foreground">{user.email}</div>
                                                     <div className="text-xs text-muted-foreground">{user.mobile}</div>
                                                 </div>
@@ -528,6 +617,13 @@ export default function UserSettings() {
                     </DialogHeader>
                     <div className="space-y-3">
                         <div className="grid grid-cols-2 gap-2">
+                            {viewingUser?.employee_name && (
+                                <>
+                                    <span className="font-medium">Linked Employee:</span>
+                                    <span>{viewingUser?.employee_name}</span>
+                                </>
+                            )}
+
                             <span className="font-medium">User Name:</span>
                             <span>{viewingUser?.user_name}</span>
 

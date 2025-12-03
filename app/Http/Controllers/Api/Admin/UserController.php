@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Employee;
 use Illuminate\Support\Facades\Hash;
 use Validator;
 
@@ -15,7 +16,7 @@ class UserController extends Controller
         $perPage = $request->input('per_page', 10);
         $search = $request->input('search', '');
 
-        $query = User::orderBy('id', 'DESC');
+        $query = User::with('employee')->orderBy('id', 'DESC');
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -31,6 +32,8 @@ class UserController extends Controller
         $users->getCollection()->transform(function ($user) {
             return [
                 'id' => $user->id,
+                'employee_id' => $user->employee_id,
+                'employee_name' => $user->employee?->full_name,
                 'user_name' => $user->user_name,
                 'email' => $user->email,
                 'mobile' => $user->mobile,
@@ -47,6 +50,27 @@ class UserController extends Controller
         ]);
     }
 
+    public function getEmployeesDropdown()
+    {
+        // Get IDs of employees already linked to users
+        $linkedEmployeeIds = User::whereNotNull('employee_id')
+            ->pluck('employee_id')
+            ->toArray();
+
+        $employees = Employee::active()
+            ->orderBy('full_name')
+            ->get(['id', 'full_name', 'email', 'mobile_number'])
+            ->map(function ($employee) use ($linkedEmployeeIds) {
+                $employee->has_user = in_array($employee->id, $linkedEmployeeIds);
+                return $employee;
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => $employees
+        ]);
+    }
+
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), User::$userRule);
@@ -60,6 +84,7 @@ class UserController extends Controller
 
         try {
             $user = User::create([
+                'employee_id' => $request->employee_id,
                 'user_name' => $request->user_name,
                 'email' => $request->email,
                 'countrycode' => $request->countrycode ?? '+91',
@@ -85,7 +110,7 @@ class UserController extends Controller
 
     public function show($id)
     {
-        $user = User::find($id);
+        $user = User::with('employee')->find($id);
 
         if (!$user) {
             return response()->json([
@@ -98,6 +123,8 @@ class UserController extends Controller
             'success' => true,
             'data' => [
                 'id' => $user->id,
+                'employee_id' => $user->employee_id,
+                'employee_name' => $user->employee?->full_name,
                 'user_name' => $user->user_name,
                 'email' => $user->email,
                 'countrycode' => $user->countrycode,
@@ -141,6 +168,7 @@ class UserController extends Controller
 
         try {
             $data = [
+                'employee_id' => $request->employee_id,
                 'user_name' => $request->user_name,
                 'email' => $request->email,
                 'countrycode' => $request->countrycode ?? '+91',

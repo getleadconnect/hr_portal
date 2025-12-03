@@ -359,8 +359,8 @@ export default function EmployeeDetails() {
                             </div>
 
                             <div className="flex flex-col sm:flex-row sm:justify-between py-2 hover:bg-gray-50 px-2 rounded transition-colors gap-1">
-                                <span className="font-medium text-gray-600 text-sm sm:text-base">Starting Salary:</span>
-                                <span className="text-gray-900 font-semibold text-sm sm:text-base">{data?.starting_salary ? `₹ ${parseFloat(data.starting_salary).toLocaleString('en-IN')}` : 'N/A'}</span>
+                                <span className="font-medium text-gray-600 text-sm sm:text-base">Salary:</span>
+                                <span className="text-gray-900 font-semibold text-sm sm:text-base">{data?.salary ? `₹ ${parseFloat(data.salary).toLocaleString('en-IN')}` : 'N/A'}</span>
                             </div>
                         </div>
                     </CardContent>

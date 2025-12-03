@@ -164,12 +164,7 @@
 												  </select>
 	                                            
 	                                        </div>
-	                                        
-											<div class="mb-3 ">
-												<label for="technology_stack">Technology Stack</label><br>
-												<input type="text" name="technology_stack" id="technology_stack" class="form-control required" placeholder="Eg: Laravel, React JS, UI/UX Designaer" required>
-	                                        </div>
-											
+
 											<div class="mb-3">
 												<label for="marital_status">Marital Status</label><br>
 												<select class="form-select" name="marital_status" id="marital_status" class="required" placeholder="Marital Status" required>
@@ -179,6 +174,25 @@
 													<option value="Devorced">Devorced</option>
 												  </select>
 	                                        </div>
+	                                        
+											<div class="mb-3 ">
+												<label for="technology_stack">Skills</label><br>
+												<input type="text" name="technology_stack" id="technology_stack" class="form-control required" placeholder="Eg: Laravel, React JS, UI/UX Designaer" required>
+	                                        </div>
+																						
+
+											<div class="mb-3  ">
+												<label for="job_category_name">Applied for</label>
+	                                            <select name="job_category_id" id="job_category_id" class="form-select required" placeholder="Category Name" required>
+													<option value="" >--Select--</option>
+													@foreach($job_cat as $row)
+														<option value="{{$row->id}}">{{$row->category_name}}</option>
+													@endforeach
+												</select>
+												
+	                                        </div>
+
+
 										</div>
 										
 										 <div class="step">
@@ -242,6 +256,7 @@
 											<div class="mb-3  ">
 												<label for="previous_employer">Previous Employer</label>
 												<input type="text" name="previous_employer" id="previous_employer" class="form-control required" placeholder="Employer" required>
+												
 	                                        </div>
 	     	
 											<div class="mb-3  ">
@@ -265,20 +280,9 @@
 											<div class="mb-3  ">
 												<label for="why_getlead">Why Getlead?</label>
 	                                            <input type="text" name="why_getlead" id="why_getlead" class="form-control required" placeholder="Why getlead" required>
-	                                            
-	                                        </div>
+
+											</div>
 																						
-											<div class="mb-3  ">
-												<label for="job_category_name">Application for</label>
-	                                            <select name="job_category_id" id="job_category_id" class="form-select required" placeholder="Category Name" required>
-													<option value="" >--Select--</option>
-													@foreach($job_cat as $row)
-														<option value="{{$row->id}}">{{$row->category_name}}</option>
-													@endforeach
-												</select>
-												
-	                                        </div>
-											
 										</div>	
 										
 											<!-- Step 4: Upload Documents -->

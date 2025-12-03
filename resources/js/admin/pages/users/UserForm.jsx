@@ -217,6 +217,7 @@ export default function UserForm() {
                                 <SelectContent>
                                     <SelectItem value="1">Admin</SelectItem>
                                     <SelectItem value="2">User</SelectItem>
+                                    <SelectItem value="3">Staff</SelectItem>
                                 </SelectContent>
                             </Select>
                             {errors.role_id && <p className="text-sm text-destructive">{errors.role_id[0]}</p>}

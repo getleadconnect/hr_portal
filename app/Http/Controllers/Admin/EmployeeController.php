@@ -135,7 +135,7 @@ class EmployeeController extends Controller
                     'designation_id' => $request->designation,
                     'date_of_hire' => $request->date_of_hire,
                     'work_location' => $request->work_location,
-                    'starting_salary' => $request->starting_salary,
+                    'salary' => $request->salary,
 
                     // Additional Details
                     'aadhar_number' => $request->aadhar_number,
@@ -326,7 +326,7 @@ class EmployeeController extends Controller
                     'designation' => $request->designation,
                     'date_of_hire' => $request->date_of_hire,
                     'work_location' => $request->work_location,
-                    'starting_salary' => $request->starting_salary,
+                    'salary' => $request->salary,
 
                     // Additional Details
                     'aadhar_number' => $request->aadhar_number,
@@ -485,7 +485,7 @@ class EmployeeController extends Controller
                 'designation' => $request->designation,
                 'date_of_hire' => $request->date_of_hire,
                 'work_location' => $request->work_location,
-                'starting_salary' => $request->starting_salary,
+                'salary' => $request->salary,
 
                 // Additional Details
                 'aadhar_number' => $request->aadhar_number,

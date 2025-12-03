@@ -53,7 +53,9 @@ export default function EmployeeForm() {
         designation_id: '',
         date_of_hire: '',
         work_location: '',
-        starting_salary: '',
+        hra: '',
+        ta: '',
+        salary: '',
         bank_name: '',
         account_number: '',
         ifsc_code: '',
@@ -490,7 +492,7 @@ export default function EmployeeForm() {
                             {errors.email && <p className="text-sm text-destructive">{errors.email[0]}</p>}
                         </div>
 
-                        <div className="space-y-2 md:col-span-2">
+                        <div className="space-y-2">
                             <Label htmlFor="address">Address</Label>
                             <Textarea
                                 id="address"
@@ -501,24 +503,26 @@ export default function EmployeeForm() {
                             />
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="city">City</Label>
-                            <Input
-                                id="city"
-                                name="city"
-                                value={formData.city}
-                                onChange={handleInputChange}
-                            />
-                        </div>
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="city">City</Label>
+                                <Input
+                                    id="city"
+                                    name="city"
+                                    value={formData.city}
+                                    onChange={handleInputChange}
+                                />
+                            </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="state">State</Label>
-                            <Input
-                                id="state"
-                                name="state"
-                                value={formData.state}
-                                onChange={handleInputChange}
-                            />
+                            <div className="space-y-2">
+                                <Label htmlFor="state">State</Label>
+                                <Input
+                                    id="state"
+                                    name="state"
+                                    value={formData.state}
+                                    onChange={handleInputChange}
+                                />
+                            </div>
                         </div>
 
                         <div className="space-y-2">
@@ -638,87 +642,126 @@ export default function EmployeeForm() {
                             </Select>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="designation_id">Designation</Label>
-                            <Select
-                                key={`designation-${formData.designation_id || 'empty'}`}
-                                value={formData.designation_id ? String(formData.designation_id) : ''}
-                                onValueChange={(value) => handleSelectChange('designation_id', value)}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select designation" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {designations?.map((designation) => (
-                                        <SelectItem key={designation.id} value={String(designation.id)}>
-                                            {designation.designation_name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                        {/* Designation, Date of Hire, Work Location in single row */}
+                        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="designation_id">Designation</Label>
+                                <Select
+                                    key={`designation-${formData.designation_id || 'empty'}`}
+                                    value={formData.designation_id ? String(formData.designation_id) : ''}
+                                    onValueChange={(value) => handleSelectChange('designation_id', value)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select designation" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {designations?.map((designation) => (
+                                            <SelectItem key={designation.id} value={String(designation.id)}>
+                                                {designation.designation_name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="date_of_hire">Date of Hire</Label>
+                                <Input
+                                    id="date_of_hire"
+                                    name="date_of_hire"
+                                    type="date"
+                                    value={formData.date_of_hire}
+                                    onChange={handleInputChange}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="work_location">Work Location</Label>
+                                <Input
+                                    id="work_location"
+                                    name="work_location"
+                                    value={formData.work_location}
+                                    onChange={handleInputChange}
+                                />
+                            </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="date_of_hire">Date of Hire</Label>
-                            <Input
-                                id="date_of_hire"
-                                name="date_of_hire"
-                                type="date"
-                                value={formData.date_of_hire}
-                                onChange={handleInputChange}
-                            />
+                        {/* HRA, TA, Starting Salary in single row */}
+                        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="hra">HRA (%)</Label>
+                                <Input
+                                    id="hra"
+                                    name="hra"
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    max="100"
+                                    value={formData.hra}
+                                    onChange={handleInputChange}
+                                    placeholder="Enter HRA %"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="ta">TA (%)</Label>
+                                <Input
+                                    id="ta"
+                                    name="ta"
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    max="100"
+                                    value={formData.ta}
+                                    onChange={handleInputChange}
+                                    placeholder="Enter TA %"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="salary">Salary</Label>
+                                <Input
+                                    id="salary"
+                                    name="salary"
+                                    type="number"
+                                    value={formData.salary}
+                                    onChange={handleInputChange}
+                                    placeholder="Enter salary"
+                                />
+                            </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="work_location">Work Location</Label>
-                            <Input
-                                id="work_location"
-                                name="work_location"
-                                value={formData.work_location}
-                                onChange={handleInputChange}
-                            />
-                        </div>
+                        {/* Bank Name, Account Number, IFSC Code in single row */}
+                        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="bank_name">Bank Name</Label>
+                                <Input
+                                    id="bank_name"
+                                    name="bank_name"
+                                    value={formData.bank_name}
+                                    onChange={handleInputChange}
+                                />
+                            </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="starting_salary">Starting Salary</Label>
-                            <Input
-                                id="starting_salary"
-                                name="starting_salary"
-                                type="number"
-                                value={formData.starting_salary}
-                                onChange={handleInputChange}
-                                placeholder="Enter starting salary"
-                            />
-                        </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="account_number">Account Number</Label>
+                                <Input
+                                    id="account_number"
+                                    name="account_number"
+                                    value={formData.account_number}
+                                    onChange={handleInputChange}
+                                />
+                            </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="bank_name">Bank Name</Label>
-                            <Input
-                                id="bank_name"
-                                name="bank_name"
-                                value={formData.bank_name}
-                                onChange={handleInputChange}
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="account_number">Account Number</Label>
-                            <Input
-                                id="account_number"
-                                name="account_number"
-                                value={formData.account_number}
-                                onChange={handleInputChange}
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="ifsc_code">IFSC Code</Label>
-                            <Input
-                                id="ifsc_code"
-                                name="ifsc_code"
-                                value={formData.ifsc_code}
-                                onChange={handleInputChange}
-                            />
+                            <div className="space-y-2">
+                                <Label htmlFor="ifsc_code">IFSC Code</Label>
+                                <Input
+                                    id="ifsc_code"
+                                    name="ifsc_code"
+                                    value={formData.ifsc_code}
+                                    onChange={handleInputChange}
+                                />
+                            </div>
                         </div>
                     </CardContent>
                 </Card>

@@ -37,7 +37,7 @@ class User extends Authenticatable implements JWTSubject
     protected $primaryKey = 'id';
 	
 	protected $fillable = [
-        'user_name', 'email','countrycode', 'mobile','password','datetime_last_login','role_id','status',
+        'user_name', 'email','countrycode', 'mobile','password','datetime_last_login','role_id','status','employee_id',
     ];
 
     protected $hidden = [
@@ -111,6 +111,12 @@ class User extends Authenticatable implements JWTSubject
         if (Auth::user()->role_id == 1) {
             return true;
         }
+    }
+
+    // Relationship with Employee
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class, 'employee_id');
     }
 
 }

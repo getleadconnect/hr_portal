@@ -1179,3 +1179,84 @@ All action buttons (Approve, Reject, Edit, Delete) now have tooltips:
 - `approved_at` - TIMESTAMP (nullable)
 - `created_at`, `updated_at` - Timestamps
 - `deleted_at` - Soft delete timestamp
+
+### December 1, 2025
+
+#### 1. Employee Details Page - Overview Tab Layout Update
+**File**: `resources/js/admin/pages/employees/EmployeeDetailsNew.jsx`
+
+Changed the Overview tab layout to move Recent Activity to a new line:
+
+**Before**:
+- 3-column grid with Personal Information, Employment Details, and Recent Activity side by side
+
+**After**:
+- 2-column grid with Personal Information and Employment Details side by side
+- Recent Activity card on a new full-width line below
+
+**Code Changes**:
+```jsx
+// Changed from:
+<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+// Changed to:
+<div className="space-y-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Personal Information */}
+        {/* Employment Details */}
+    </div>
+    {/* Recent Activity - Full width on new line */}
+</div>
+```
+
+#### 2. Employee Details Page - Attendance Tab Stats Layout
+**File**: `resources/js/admin/pages/employees/EmployeeDetailsNew.jsx`
+
+Updated Attendance tab summary stats to match the new horizontal left-aligned design:
+
+**Before**:
+- Centered grid cards with gray background (`grid grid-cols-2 sm:grid-cols-5 bg-gray-50 rounded-lg`)
+
+**After**:
+- Horizontal flex layout, left-aligned (`flex flex-wrap gap-8 border-b`)
+- Labels: uppercase, smaller text (`text-xs text-gray-400 uppercase tracking-wide`)
+- Values: larger, semi-bold (`text-2xl font-semibold`)
+- Present value in green (`text-green-600`)
+- Absent value in red (`text-red-600`)
+
+**Stats displayed**:
+- WORKING DAYS
+- PRESENT (green)
+- ABSENT (red)
+- LEAVE
+- TOTAL HOURS
+
+#### 3. Hours Display - Absolute Positive Values
+**Files**:
+- `resources/js/admin/pages/employees/EmployeeDetailsNew.jsx`
+- `app/Http/Controllers/Api/Admin/EmployeeController.php`
+
+Updated all hours values to display as absolute positive integers (no negative values):
+
+**Frontend Changes** (EmployeeDetailsNew.jsx):
+```jsx
+// Overview tab - This Month hours
+{Math.abs(Math.floor(data?.hours_this_month || 0))}h
+
+// Attendance tab - Summary Total Hours
+{Math.abs(Math.floor(attendanceData?.summary?.total_hours || 0))}h
+```
+
+**Backend Changes** (EmployeeController.php):
+```php
+// Line 297 - hours_this_month in show() method
+'hours_this_month' => abs(round($totalHours, 0)),
+
+// Line 513 - total_hours in getAttendanceHistory() summary
+'total_hours' => abs(round($totalHours, 0)),
+
+// Line 522 - hours in attendance records
+'hours' => $attendance->hours ? abs(floor($attendance->hours)) . 'h ' . abs(round(($attendance->hours - floor($attendance->hours)) * 60)) . 'm' : '0h',
+```
+
+**Note**: The attendance datatable hours column displays the pre-formatted string from backend (e.g., "9h 15m") which is now always positive

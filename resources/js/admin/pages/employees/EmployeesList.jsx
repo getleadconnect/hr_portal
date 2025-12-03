@@ -26,7 +26,7 @@ import {
 } from '../../components/ui/alert-dialog';
 import DataTableControls from '../../components/DataTableControls';
 import Pagination from '../../components/Pagination';
-import { Eye, Trash2, Edit, Power } from 'lucide-react';
+import { Eye, Trash2, Edit, Power, LayoutGrid } from 'lucide-react';
 
 export default function EmployeesList() {
     const [search, setSearch] = useState('');
@@ -163,9 +163,21 @@ export default function EmployeesList() {
                     <h1 className="font-bold tracking-tight" style={{ fontSize: '1.25rem' }}>All Employees</h1>
                     <p className="text-muted-foreground">Manage employee records</p>
                 </div>
-                <Link to="/employees/create">
-                    <Button>Add New Employee</Button>
-                </Link>
+                <div className="flex items-center gap-2">
+                    {/* Toggle to Card View */}
+                    <Link to="/employees">
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            title="Switch to Card View"
+                        >
+                            <LayoutGrid className="h-4 w-4" />
+                        </Button>
+                    </Link>
+                    <Link to="/employees/create">
+                        <Button>Add New Employee</Button>
+                    </Link>
+                </div>
             </div>
 
             <Card>
@@ -305,8 +317,8 @@ export default function EmployeesList() {
                                                 <td className="p-3 text-sm">{employee.job_title || 'N/A'}</td>
                                                 <td className="p-3 text-sm">{employee.department || 'N/A'}</td>
                                                 <td className="p-3">
-                                                    <Badge variant={employee.status === 1 ? 'default' : 'secondary'}>
-                                                        {employee.status === 1 ? 'Active' : 'Inactive'}
+                                                    <Badge variant={employee.status === 1 ? 'default' : 'destructive'}>
+                                                        {employee.status === 1 ? 'Active' : 'Resigned'}
                                                     </Badge>
                                                 </td>
                                                 <td className="p-3">

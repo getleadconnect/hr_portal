@@ -40,7 +40,8 @@ const menuItems = [
         label: 'Employees',
         icon: Users,
         children: [
-            { path: '/employees', label: 'Employee List' },
+            { path: '/employees', label: 'Employees' },
+            { path: '/employees/list', label: 'Employee List' },
             { path: '/attendance', label: 'Attendance' },
             { path: '/leave-requests', label: 'Leave Requests' }
         ]
@@ -72,12 +73,27 @@ export default function AdminLayout({ children, pageTitle }) {
         if (path === '/settings') {
             return location.pathname.startsWith('/settings');
         }
-        // For submenu items, check if current path starts with the menu path
+        // For /employees and /employees/list, use exact match
+        if (path === '/employees') {
+            return location.pathname === '/employees';
+        }
+        if (path === '/employees/list') {
+            return location.pathname === '/employees/list';
+        }
+        // For other submenu items, check if current path starts with the menu path
         return location.pathname.startsWith(path);
     };
 
     const isDropdownActive = (children) => {
-        return children?.some(child => location.pathname.startsWith(child.path));
+        return children?.some(child => {
+            if (child.path === '/employees') {
+                return location.pathname === '/employees';
+            }
+            if (child.path === '/employees/list') {
+                return location.pathname === '/employees/list';
+            }
+            return location.pathname.startsWith(child.path);
+        });
     };
 
     const toggleDropdown = (label) => {
@@ -88,9 +104,15 @@ export default function AdminLayout({ children, pageTitle }) {
     useEffect(() => {
         menuItems.forEach((item) => {
             if (item.children) {
-                const isChildActive = item.children.some(child =>
-                    location.pathname.startsWith(child.path)
-                );
+                const isChildActive = item.children.some(child => {
+                    if (child.path === '/employees') {
+                        return location.pathname === '/employees';
+                    }
+                    if (child.path === '/employees/list') {
+                        return location.pathname === '/employees/list';
+                    }
+                    return location.pathname.startsWith(child.path);
+                });
                 if (isChildActive) {
                     setOpenDropdown(item.label);
                 }
