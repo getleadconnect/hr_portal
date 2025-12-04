@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Users, Briefcase, GraduationCap, Building, UserCog, Bell, CalendarDays } from 'lucide-react';
+import { Users, Briefcase, GraduationCap, Building, UserCog, Bell, CalendarDays, Percent } from 'lucide-react';
 import UserSettings from './settings/UserSettings';
 import JobCategorySettings from './settings/JobCategorySettings';
 import QualificationsSettings from './settings/QualificationsSettings';
@@ -7,6 +7,7 @@ import DepartmentsSettings from './settings/DepartmentsSettings';
 import DesignationsSettings from './settings/DesignationsSettings';
 import NotificationsSettings from './settings/NotificationsSettings';
 import LeaveSettings from './settings/LeaveSettings';
+import AllowanceSettings from './settings/AllowanceSettings';
 
 const tabs = [
     { id: 'user-settings', label: 'User Settings', icon: Users, component: UserSettings },
@@ -15,6 +16,7 @@ const tabs = [
     { id: 'departments', label: 'Departments', icon: Building, component: DepartmentsSettings },
     { id: 'designations', label: 'Designations', icon: UserCog, component: DesignationsSettings },
     { id: 'leave-settings', label: 'Leave Settings', icon: CalendarDays, component: LeaveSettings },
+    { id: 'allowances', label: 'Allowances', icon: Percent, component: AllowanceSettings },
     { id: 'notifications', label: 'Notifications', icon: Bell, component: NotificationsSettings },
 ];
 

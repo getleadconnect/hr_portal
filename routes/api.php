@@ -18,6 +18,8 @@ use App\Http\Controllers\Api\Admin\NotificationSettingController;
 use App\Http\Controllers\Api\Admin\LeaveSettingController;
 use App\Http\Controllers\Api\Admin\UserDashboardController;
 use App\Http\Controllers\Api\Admin\EmployeeDocumentController;
+use App\Http\Controllers\Api\Admin\PayrollController;
+use App\Http\Controllers\Api\Admin\AllowanceController;
 
 // Public routes
 Route::post('/admin/login', [AuthController::class, 'login']);
@@ -137,6 +139,26 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     Route::put('/leave-settings/{id}', [LeaveSettingController::class, 'update']);
     Route::delete('/leave-settings/{id}', [LeaveSettingController::class, 'destroy']);
     Route::patch('/leave-settings/{id}/toggle-status', [LeaveSettingController::class, 'toggleStatus']);
+
+    // Allowances
+    Route::get('/allowances', [AllowanceController::class, 'index']);
+    Route::post('/allowances', [AllowanceController::class, 'store']);
+    Route::get('/allowances/{id}', [AllowanceController::class, 'show']);
+    Route::put('/allowances/{id}', [AllowanceController::class, 'update']);
+    Route::delete('/allowances/{id}', [AllowanceController::class, 'destroy']);
+    Route::patch('/allowances/{id}/toggle-status', [AllowanceController::class, 'toggleStatus']);
+
+    // Payroll
+    Route::get('/payrolls', [PayrollController::class, 'index']);
+    Route::get('/payrolls/months', [PayrollController::class, 'getMonths']);
+    Route::get('/payrolls/employees', [PayrollController::class, 'getEmployeesForSalary']);
+    Route::post('/payrolls/process', [PayrollController::class, 'processPayroll']);
+    Route::post('/payrolls/salary', [PayrollController::class, 'storeSalary']);
+    Route::get('/payrolls/salary/{employeeId}', [PayrollController::class, 'getSalaryHistory']);
+    Route::get('/payrolls/{id}', [PayrollController::class, 'show']);
+    Route::put('/payrolls/{id}', [PayrollController::class, 'update']);
+    Route::patch('/payrolls/{id}/approve', [PayrollController::class, 'approve']);
+    Route::delete('/payrolls/{id}', [PayrollController::class, 'destroy']);
 
     // Get countries for dropdown
     Route::get('/countries', function () {

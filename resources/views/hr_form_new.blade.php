@@ -171,15 +171,15 @@
 													<option value="">--select--</option>
 													<option value="Single">Single</option>
 													<option value="Married">Married</option>
-													<option value="Devorced">Devorced</option>
+													<option value="Divorced">Divorced</option>
 												  </select>
 	                                        </div>
 	                                        
 											<div class="mb-3 ">
 												<label for="technology_stack">Skills</label><br>
-												<input type="text" name="technology_stack" id="technology_stack" class="form-control required" placeholder="Eg: Laravel, React JS, UI/UX Designaer" required>
+												<input type="text" name="technology_stack" id="technology_stack" class="form-control " placeholder="Eg: Laravel, React JS, UI/UX Designaer" >
 	                                        </div>
-																						
+											
 
 											<div class="mb-3  ">
 												<label for="job_category_name">Applied for</label>
@@ -256,7 +256,7 @@
 											<div class="mb-3  ">
 												<label for="previous_employer">Previous Employer</label>
 												<input type="text" name="previous_employer" id="previous_employer" class="form-control required" placeholder="Employer" required>
-												
+
 	                                        </div>
 	     	
 											<div class="mb-3  ">

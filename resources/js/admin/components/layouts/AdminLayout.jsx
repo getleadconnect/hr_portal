@@ -12,7 +12,8 @@ import {
     ChevronRight,
     User,
     KeyRound,
-    CalendarCheck
+    CalendarCheck,
+    DollarSign
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../ui/button';
@@ -46,6 +47,7 @@ const menuItems = [
             { path: '/leave-requests', label: 'Leave Requests' }
         ]
     },
+    { path: '/payroll', label: 'Payroll', icon: DollarSign },
     { path: '/settings', label: 'Settings', icon: SettingsIcon },
 ];
 

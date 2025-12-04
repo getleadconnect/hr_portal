@@ -20,6 +20,7 @@ import UserDetails from './pages/users/UserDetails';
 import JobCategoriesList from './pages/job-categories/JobCategoriesList';
 import AttendanceList from './pages/attendance/AttendanceList';
 import LeaveRequestList from './pages/leave-requests/LeaveRequestList';
+import PayrollList from './pages/payroll/PayrollList';
 import Settings from './pages/Settings';
 
 // User Dashboard Pages
@@ -115,6 +116,7 @@ function getPageTitle(pathname) {
     }
     if (pathname.startsWith('/attendance')) return 'Attendance';
     if (pathname.startsWith('/leave-requests')) return 'Leave Requests';
+    if (pathname.startsWith('/payroll')) return 'Payroll Management';
     if (pathname.startsWith('/users')) return 'Users';
     if (pathname.startsWith('/job-categories')) return 'Job Categories';
     if (pathname.startsWith('/settings')) return 'Settings';
@@ -192,6 +194,8 @@ function App() {
                                     <Route path="/attendance" element={<AttendanceList />} />
 
                                     <Route path="/leave-requests" element={<LeaveRequestList />} />
+
+                                    <Route path="/payroll" element={<PayrollList />} />
 
                                     <Route path="/settings" element={<Settings />} />
                                 </Routes>
