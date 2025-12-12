@@ -38,6 +38,10 @@ const getStatusColor = (status) => {
             return 'bg-green-100 text-green-700 border-green-300';
         case 'Rejected':
             return 'bg-red-100 text-red-700 border-red-300';
+        case 'Not Interested':
+            return 'bg-orange-100 text-orange-700 border-orange-300';
+        case 'Not fit for this job':
+            return 'bg-purple-100 text-purple-700 border-purple-300';
         default:
             return 'bg-gray-100 text-gray-700 border-gray-300';
     }
@@ -59,6 +63,7 @@ export default function ApplicationsList() {
     const [rejectionModalOpen, setRejectionModalOpen] = useState(false);
     const [rejectionReason, setRejectionReason] = useState('');
     const [selectedApplicationId, setSelectedApplicationId] = useState(null);
+    const [selectedStatus, setSelectedStatus] = useState(null); // Track which status triggered modal
 
     // Status update mutation
     const statusMutation = useMutation({
@@ -70,6 +75,7 @@ export default function ApplicationsList() {
             setRejectionModalOpen(false);
             setRejectionReason('');
             setSelectedApplicationId(null);
+            setSelectedStatus(null);
         },
         onError: (error) => {
             toast.error(error.response?.data?.message || 'Failed to update status');
@@ -77,24 +83,21 @@ export default function ApplicationsList() {
     });
 
     const handleStatusChange = (id, newStatus) => {
-        if (newStatus === 'Rejected') {
-            // Open rejection modal for entering reason
-            setSelectedApplicationId(id);
-            setRejectionReason('');
-            setRejectionModalOpen(true);
-        } else {
-            statusMutation.mutate({ id, status: newStatus });
-        }
+        // Open modal for entering reason for all status changes
+        setSelectedApplicationId(id);
+        setSelectedStatus(newStatus);
+        setRejectionReason('');
+        setRejectionModalOpen(true);
     };
 
     const handleRejectionSubmit = () => {
         if (!rejectionReason.trim()) {
-            toast.error('Please enter a rejection reason');
+            toast.error('Please enter a reason');
             return;
         }
         statusMutation.mutate({
             id: selectedApplicationId,
-            status: 'Rejected',
+            status: selectedStatus,
             rejection_reason: rejectionReason
         });
     };
@@ -313,6 +316,12 @@ export default function ApplicationsList() {
                                                     </SelectContent>
                                                 </Select>
                                             </div>
+                                            {app.rejection_reason && (
+                                                <div className="col-span-2">
+                                                    <span className="text-muted-foreground">Reason:</span>
+                                                    <p className="font-medium text-sm">{app.rejection_reason}</p>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
@@ -333,6 +342,7 @@ export default function ApplicationsList() {
                                             <th className="px-2 py-2 text-left font-medium text-sm">Salary</th>
                                             <th className="px-2 py-2 text-left font-medium text-sm">CV_File</th>
                                             <th className="px-2 py-2 text-left font-medium text-sm">Status</th>
+                                            <th className="px-2 py-2 text-left font-medium text-sm" style={{ width: '150px', minWidth: '150px' }}>Reason</th>
                                             <th className="px-2 py-2 text-center font-medium text-sm">Action</th>
                                         </tr>
                                     </thead>
@@ -402,6 +412,9 @@ export default function ApplicationsList() {
                                                         </SelectContent>
                                                     </Select>
                                                 </td>
+                                                <td className="px-2 py-2 text-sm align-top" style={{ width: '150px', minWidth: '150px', maxWidth: '150px', wordWrap: 'break-word' }}>
+                                                    {app.rejection_reason || '-'}
+                                                </td>
                                                 <td className="px-2 py-2">
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
@@ -448,21 +461,21 @@ export default function ApplicationsList() {
                 </CardContent>
             </Card>
 
-            {/* Rejection Reason Modal */}
+            {/* Status Reason Modal */}
             <Dialog open={rejectionModalOpen} onOpenChange={setRejectionModalOpen}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle>Reject Application</DialogTitle>
+                        <DialogTitle>Change Status to "{selectedStatus}"</DialogTitle>
                         <DialogDescription>
-                            Please provide a reason for rejecting this application.
+                            Please provide a reason for changing the status to "{selectedStatus}".
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="rejection_reason">Rejection Reason *</Label>
+                            <Label htmlFor="rejection_reason">Reason *</Label>
                             <Textarea
                                 id="rejection_reason"
-                                placeholder="Enter the reason for rejection..."
+                                placeholder="Enter the reason..."
                                 value={rejectionReason}
                                 onChange={(e) => setRejectionReason(e.target.value)}
                                 rows={4}
@@ -477,17 +490,18 @@ export default function ApplicationsList() {
                                 setRejectionModalOpen(false);
                                 setRejectionReason('');
                                 setSelectedApplicationId(null);
+                                setSelectedStatus(null);
                             }}
                         >
                             Cancel
                         </Button>
                         <Button
                             type="button"
-                            variant="destructive"
+                            variant={selectedStatus === 'Rejected' || selectedStatus === 'Not Interested' || selectedStatus === 'Not fit for this job' ? 'destructive' : 'default'}
                             onClick={handleRejectionSubmit}
                             disabled={statusMutation.isPending}
                         >
-                            {statusMutation.isPending ? 'Rejecting...' : 'Reject Application'}
+                            {statusMutation.isPending ? 'Updating...' : 'Update Status'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

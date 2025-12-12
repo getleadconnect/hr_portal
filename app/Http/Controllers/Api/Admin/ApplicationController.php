@@ -170,14 +170,9 @@ class ApplicationController extends Controller
 
             $updateData = ['status' => $request->status];
 
-            // If status is Rejected, store the rejection reason
-            if ($request->status === Application::STATUS_REJECTED && $request->has('rejection_reason')) {
+            // Store the reason for all status changes
+            if ($request->has('rejection_reason')) {
                 $updateData['rejection_reason'] = $request->rejection_reason;
-            }
-
-            // Clear rejection reason if status is changed from Rejected to something else
-            if ($request->status !== Application::STATUS_REJECTED) {
-                $updateData['rejection_reason'] = null;
             }
 
             $application->update($updateData);

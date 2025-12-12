@@ -146,6 +146,7 @@ All endpoints prefixed with `/api/admin/` and require Sanctum authentication (ex
 ### Key Tables & Relationships
 - **employees** - Uses FK IDs: `qualification_id`, `department_id`, `designation_id`
 - **users** - Admin users, optional `employee_id` FK for staff accounts
+  - `role_id`: 1=Super Admin, 2=Admin, 3=Staff (Staff uses UserLayout, others use AdminLayout)
 - **attendances** - Employee attendance records
 - **leave_requests** - Leave applications with status workflow
 - **payrolls** - Monthly payroll records
@@ -193,6 +194,13 @@ Use `DataTableControls` component for consistent table UX:
 For Shadcn Select to show pre-populated values in edit forms, add dynamic `key`:
 ```jsx
 <Select key={`field-${formData.field || 'empty'}`} value={formData.field} ...>
+```
+
+### Authentication Storage
+```jsx
+// Token and user stored in localStorage
+localStorage.getItem('admin_token');  // Bearer token for API requests
+localStorage.getItem('admin_user');   // JSON stringified user object
 ```
 
 ### Toast Notifications
