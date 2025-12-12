@@ -81,15 +81,21 @@ class TelegramService
      *
      * @param object $application
      * @param string $newStatus
+     * @param string|null $reason
      * @return array|null
      */
-    public function sendStatusChangeNotification($application, $newStatus)
+    public function sendStatusChangeNotification($application, $newStatus, $reason = null)
     {
         $statusEmoji = $this->getStatusEmoji($newStatus);
         $statusLabel = $this->getStatusLabel($newStatus);
 
         $message = "{$statusEmoji} <b>Application Status Updated</b>\n\n";
         $message .= "📋 <b>Status:</b> {$statusLabel}\n";
+
+        if (!empty($reason)) {
+            $message .= "📝 <b>Reason:</b> {$reason}\n";
+        }
+
         $message .= "━━━━━━━━━━━━━━━━━━\n";
         $message .= "👤 <b>Name:</b> " . ($application->name ?? 'N/A') . "\n";
         $message .= "📧 <b>Email:</b> " . ($application->email ?? 'N/A') . "\n";
@@ -126,6 +132,10 @@ class TelegramService
                 return '✅';
             case 'Rejected':
                 return '❌';
+            case 'Not Interested':
+                return '🚫';
+            case 'Not fit for this job':
+                return '⛔';
             default:
                 return '📌';
         }
@@ -148,6 +158,10 @@ class TelegramService
                 return '🟢 Appointed';
             case 'Rejected':
                 return '🔴 Rejected';
+            case 'Not Interested':
+                return '🟠 Not Interested';
+            case 'Not fit for this job':
+                return '🟣 Not fit for this job';
             default:
                 return $status;
         }

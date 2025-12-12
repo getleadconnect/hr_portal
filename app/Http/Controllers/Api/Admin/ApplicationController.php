@@ -185,7 +185,7 @@ class ApplicationController extends Controller
                     ->first();
 
                 $telegramService = new TelegramService();
-                $telegramService->sendStatusChangeNotification($applicationWithCategory, $request->status);
+                $telegramService->sendStatusChangeNotification($applicationWithCategory, $request->status, $request->rejection_reason);
             }
 
             return response()->json([
