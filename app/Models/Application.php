@@ -16,6 +16,7 @@ class Application extends Model
     const STATUS_SHORT_LISTED = 'Short Listed';
     const STATUS_APPOINTED = 'Appointed';
     const STATUS_REJECTED = 'Rejected';
+    const STATUS_NOT_FIT = 'Not fit for this job';
 
     // Available statuses
     public static $statuses = [
@@ -23,6 +24,7 @@ class Application extends Model
         self::STATUS_SHORT_LISTED,
         self::STATUS_APPOINTED,
         self::STATUS_REJECTED,
+        self::STATUS_NOT_FIT,
     ];
 
 	protected $guarded = [];

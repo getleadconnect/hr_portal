@@ -194,10 +194,6 @@ class EmployeeController extends Controller
 
                 $result = Employee::create($data);
                 
-
-                dd($result);
-
-
                 \Log::info($result);
 
                 return response()->json([

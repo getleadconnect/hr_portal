@@ -53,6 +53,7 @@ class ApplicationController extends Controller
                 'cv_url' => $app->cv_file ? config('constants.file_path') . $app->cv_file : null,
                 'created_at' => $app->created_at->format('d-m-Y'),
                 'status' => $app->status ?? 'New',
+                'rejection_reason' => $app->rejection_reason,
             ];
         });
 
@@ -103,6 +104,7 @@ class ApplicationController extends Controller
             'cv_url' => $application->cv_file ? config('constants.file_path') . $application->cv_file : null,
             'created_at' => $application->created_at->format('d-m-Y H:i:s'),
             'status' => $application->status ?? 'New',
+            'rejection_reason' => $application->rejection_reason,
         ];
 
         return response()->json([
@@ -166,7 +168,19 @@ class ApplicationController extends Controller
                 ], 422);
             }
 
-            $application->update(['status' => $request->status]);
+            $updateData = ['status' => $request->status];
+
+            // If status is Rejected, store the rejection reason
+            if ($request->status === Application::STATUS_REJECTED && $request->has('rejection_reason')) {
+                $updateData['rejection_reason'] = $request->rejection_reason;
+            }
+
+            // Clear rejection reason if status is changed from Rejected to something else
+            if ($request->status !== Application::STATUS_REJECTED) {
+                $updateData['rejection_reason'] = null;
+            }
+
+            $application->update($updateData);
 
             // Send Telegram notification (except for "New" status) if enabled
             if ($request->status !== 'New' && NotificationSetting::isStatusChangeNotificationEnabled()) {

@@ -12,6 +12,16 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '../../components/ui/dropdown-menu';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '../../components/ui/dialog';
+import { Label } from '../../components/ui/label';
+import { Textarea } from '../../components/ui/textarea';
 import DataTableControls from '../../components/DataTableControls';
 import Pagination from '../../components/Pagination';
 import { Eye, Trash2 } from 'lucide-react';
@@ -45,12 +55,21 @@ export default function ApplicationsList() {
         jobCategoryId: ''
     });
 
+    // Rejection modal state
+    const [rejectionModalOpen, setRejectionModalOpen] = useState(false);
+    const [rejectionReason, setRejectionReason] = useState('');
+    const [selectedApplicationId, setSelectedApplicationId] = useState(null);
+
     // Status update mutation
     const statusMutation = useMutation({
-        mutationFn: ({ id, status }) => api.patch(`/admin/applications/${id}/status`, { status }),
+        mutationFn: ({ id, status, rejection_reason }) => api.patch(`/admin/applications/${id}/status`, { status, rejection_reason }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['applications'] });
             toast.success('Status updated successfully');
+            // Reset rejection modal state
+            setRejectionModalOpen(false);
+            setRejectionReason('');
+            setSelectedApplicationId(null);
         },
         onError: (error) => {
             toast.error(error.response?.data?.message || 'Failed to update status');
@@ -58,7 +77,26 @@ export default function ApplicationsList() {
     });
 
     const handleStatusChange = (id, newStatus) => {
-        statusMutation.mutate({ id, status: newStatus });
+        if (newStatus === 'Rejected') {
+            // Open rejection modal for entering reason
+            setSelectedApplicationId(id);
+            setRejectionReason('');
+            setRejectionModalOpen(true);
+        } else {
+            statusMutation.mutate({ id, status: newStatus });
+        }
+    };
+
+    const handleRejectionSubmit = () => {
+        if (!rejectionReason.trim()) {
+            toast.error('Please enter a rejection reason');
+            return;
+        }
+        statusMutation.mutate({
+            id: selectedApplicationId,
+            status: 'Rejected',
+            rejection_reason: rejectionReason
+        });
     };
 
     // Fetch applications with filters
@@ -409,6 +447,51 @@ export default function ApplicationsList() {
                     )}
                 </CardContent>
             </Card>
+
+            {/* Rejection Reason Modal */}
+            <Dialog open={rejectionModalOpen} onOpenChange={setRejectionModalOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Reject Application</DialogTitle>
+                        <DialogDescription>
+                            Please provide a reason for rejecting this application.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="rejection_reason">Rejection Reason *</Label>
+                            <Textarea
+                                id="rejection_reason"
+                                placeholder="Enter the reason for rejection..."
+                                value={rejectionReason}
+                                onChange={(e) => setRejectionReason(e.target.value)}
+                                rows={4}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                                setRejectionModalOpen(false);
+                                setRejectionReason('');
+                                setSelectedApplicationId(null);
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={handleRejectionSubmit}
+                            disabled={statusMutation.isPending}
+                        >
+                            {statusMutation.isPending ? 'Rejecting...' : 'Reject Application'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
