@@ -111,7 +111,7 @@ All endpoints prefixed with `/api/admin/` and require Sanctum authentication (ex
 ### Core Resources (CRUD + toggle-status)
 - `/employees` - Employee management (POST uses multipart/form-data)
 - `/users` - Admin users
-- `/applications` - Job applications
+- `/applications` - Job applications (includes status workflow with rejection reason)
 - `/job-openings` - Job postings
 - `/job-categories`, `/departments`, `/designations`, `/qualifications` - Master data
 
@@ -156,6 +156,8 @@ All endpoints prefixed with `/api/admin/` and require Sanctum authentication (ex
 ### Status Values
 - Active: `1`, Inactive: `0`
 - Leave status: `pending`, `approved`, `rejected`
+- Application status: `New`, `Short Listed`, `Appointed`, `Rejected`, `Not fit for this job`
+  - When status is set to `Rejected`, a `rejection_reason` is required and stored
 
 ### Date Formats
 - Database: `Y-m-d`
@@ -200,7 +202,7 @@ toast.success('Success'); toast.error('Error');
 ```
 
 ### Confirmation Dialogs
-Use Shadcn `AlertDialog` for destructive actions.
+Use Shadcn `AlertDialog` for destructive actions. Use Shadcn `Dialog` for input modals (e.g., rejection reason modal).
 
 ## Navigation Structure
 
