@@ -25,7 +25,8 @@ class ApplicationController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('applications.name', 'LIKE', "%{$search}%")
                     ->orWhere('applications.email', 'LIKE', "%{$search}%")
-                    ->orWhere('applications.mobile', 'LIKE', "%{$search}%");
+                    ->orWhere('applications.mobile', 'LIKE', "%{$search}%")
+                    ->orWhere('job_category.category_name', 'LIKE', "%{$search}%");
             });
         }
 

@@ -136,6 +136,8 @@ class TelegramService
                 return '🚫';
             case 'Not fit for this job':
                 return '⛔';
+            case 'No vacancies now':
+                return '🔒';
             default:
                 return '📌';
         }
@@ -162,6 +164,8 @@ class TelegramService
                 return '🟠 Not Interested';
             case 'Not fit for this job':
                 return '🟣 Not fit for this job';
+            case 'No vacancies now':
+                return '⚪ No vacancies now';
             default:
                 return $status;
         }
