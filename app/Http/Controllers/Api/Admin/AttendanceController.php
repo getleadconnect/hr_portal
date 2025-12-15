@@ -15,12 +15,14 @@ class AttendanceController extends Controller
     {
         $perPage = $request->input('per_page', 10);
         $search = $request->input('search', '');
-        $date = $request->input('date', Carbon::today()->format('Y-m-d'));
-        $departmentId = $request->input('department_id', '');
+        $startDate = $request->input('start_date', Carbon::today()->format('Y-m-d'));
+        $endDate = $request->input('end_date', Carbon::today()->format('Y-m-d'));
+        $employeeId = $request->input('employee_id', '');
         $status = $request->input('status', '');
 
         $query = Attendance::with(['employee'])
-            ->where('attendance_date', $date)
+            ->whereBetween('attendance_date', [$startDate, $endDate])
+            ->orderBy('attendance_date', 'DESC')
             ->orderBy('id', 'DESC');
 
         // Search by employee name or employee_id
@@ -31,11 +33,9 @@ class AttendanceController extends Controller
             });
         }
 
-        // Filter by department
-        if ($departmentId) {
-            $query->whereHas('employee', function ($q) use ($departmentId) {
-                $q->where('department_id', $departmentId);
-            });
+        // Filter by employee
+        if ($employeeId) {
+            $query->where('employee_id', $employeeId);
         }
 
         // Filter by status
@@ -108,7 +108,7 @@ class AttendanceController extends Controller
             if ($request->check_in && $request->check_out) {
                 $checkIn = Carbon::parse($request->check_in);
                 $checkOut = Carbon::parse($request->check_out);
-                $data['hours'] = round($checkOut->diffInMinutes($checkIn) / 60, 2);
+                $data['hours'] = abs(round($checkOut->diffInMinutes($checkIn) / 60, 2));
             }
 
             $attendance = Attendance::create($data);
@@ -207,7 +207,7 @@ class AttendanceController extends Controller
             if ($request->check_in && $request->check_out) {
                 $checkIn = Carbon::parse($request->check_in);
                 $checkOut = Carbon::parse($request->check_out);
-                $data['hours'] = round($checkOut->diffInMinutes($checkIn) / 60, 2);
+                $data['hours'] = abs(round($checkOut->diffInMinutes($checkIn) / 60, 2));
             } else {
                 $data['hours'] = null;
             }
@@ -284,7 +284,7 @@ class AttendanceController extends Controller
                 if (!empty($attendanceData['check_in']) && !empty($attendanceData['check_out'])) {
                     $checkIn = Carbon::parse($attendanceData['check_in']);
                     $checkOut = Carbon::parse($attendanceData['check_out']);
-                    $hours = round($checkOut->diffInMinutes($checkIn) / 60, 2);
+                    $hours = abs(round($checkOut->diffInMinutes($checkIn) / 60, 2));
                 }
 
                 $attendance = Attendance::updateOrCreate(
@@ -370,17 +370,15 @@ class AttendanceController extends Controller
     {
         $startDate = $request->input('start_date', Carbon::today()->format('Y-m-d'));
         $endDate = $request->input('end_date', Carbon::today()->format('Y-m-d'));
-        $departmentId = $request->input('department_id', '');
+        $employeeId = $request->input('employee_id', '');
 
         $query = Attendance::with('employee')
             ->whereBetween('attendance_date', [$startDate, $endDate])
             ->orderBy('attendance_date')
             ->orderBy('employee_id');
 
-        if ($departmentId) {
-            $query->whereHas('employee', function ($q) use ($departmentId) {
-                $q->where('department_id', $departmentId);
-            });
+        if ($employeeId) {
+            $query->where('employee_id', $employeeId);
         }
 
         $attendances = $query->get();
@@ -393,7 +391,7 @@ class AttendanceController extends Controller
                 'Department' => $attendance->employee->department ?? 'N/A',
                 'Check In' => $attendance->check_in ? Carbon::parse($attendance->check_in)->format('h:i A') : '--:--',
                 'Check Out' => $attendance->check_out ? Carbon::parse($attendance->check_out)->format('h:i A') : '--:--',
-                'Hours' => $attendance->hours ?? '--',
+                'Hours' => $attendance->hours ? abs($attendance->hours) : '--',
                 'Status' => ucfirst(str_replace('_', ' ', $attendance->status)),
             ];
         });

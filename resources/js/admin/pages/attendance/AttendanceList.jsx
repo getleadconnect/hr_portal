@@ -31,12 +31,23 @@ import { Calendar, FileDown, UserPlus, Edit, Trash2, Clock, Check } from 'lucide
 
 export default function AttendanceList() {
     const today = new Date().toISOString().split('T')[0];
-    const [selectedDate, setSelectedDate] = useState(today);
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(10);
-    const [departmentId, setDepartmentId] = useState('');
+
+    // Filter states (for inputs)
+    const [employeeId, setEmployeeId] = useState('');
+    const [startDate, setStartDate] = useState(today);
+    const [endDate, setEndDate] = useState(today);
     const [statusFilter, setStatusFilter] = useState('');
+
+    // Applied filter states (for API query)
+    const [appliedFilters, setAppliedFilters] = useState({
+        employeeId: '',
+        startDate: today,
+        endDate: today,
+        statusFilter: ''
+    });
 
     // Dialog states
     const [markDialogOpen, setMarkDialogOpen] = useState(false);
@@ -58,43 +69,70 @@ export default function AttendanceList() {
 
     // Fetch attendance records
     const { data, isLoading } = useQuery({
-        queryKey: ['attendances', page, search, perPage, selectedDate, departmentId, statusFilter],
+        queryKey: ['attendances', page, search, perPage, appliedFilters],
         queryFn: async () => {
             const response = await api.get('/admin/attendances', {
                 params: {
                     page,
                     search,
                     per_page: perPage,
-                    date: selectedDate,
-                    department_id: departmentId || undefined,
-                    status: statusFilter || undefined
+                    start_date: appliedFilters.startDate,
+                    end_date: appliedFilters.endDate,
+                    employee_id: appliedFilters.employeeId || undefined,
+                    status: appliedFilters.statusFilter || undefined
                 }
             });
             return response.data.data;
         },
     });
 
-    // Fetch departments for filter
-    const { data: departments } = useQuery({
-        queryKey: ['departments-all'],
+    // Fetch all employees for filter dropdown
+    const { data: allEmployees } = useQuery({
+        queryKey: ['employees-all-list'],
         queryFn: async () => {
-            const response = await api.get('/admin/departments', {
-                params: { per_page: 1000 }
+            const response = await api.get('/admin/employees', {
+                params: { per_page: 1000, status: 1 }
             });
             return response.data.data.data;
         },
     });
 
-    // Fetch active employees for dropdown
+    // Fetch active employees for mark attendance dropdown
     const { data: employees } = useQuery({
-        queryKey: ['employees-active'],
+        queryKey: ['employees-active', appliedFilters.startDate],
         queryFn: async () => {
             const response = await api.get('/admin/attendances/employees', {
-                params: { date: selectedDate }
+                params: { date: appliedFilters.startDate }
             });
             return response.data.data;
         },
     });
+
+    // Handle filter apply
+    const handleApplyFilter = () => {
+        setAppliedFilters({
+            employeeId,
+            startDate,
+            endDate,
+            statusFilter
+        });
+        setPage(1);
+    };
+
+    // Handle filter clear
+    const handleClearFilter = () => {
+        setEmployeeId('');
+        setStartDate(today);
+        setEndDate(today);
+        setStatusFilter('');
+        setAppliedFilters({
+            employeeId: '',
+            startDate: today,
+            endDate: today,
+            statusFilter: ''
+        });
+        setPage(1);
+    };
 
     // Create mutation
     const createMutation = useMutation({
@@ -140,7 +178,7 @@ export default function AttendanceList() {
     const resetForm = () => {
         setFormData({
             employee_id: '',
-            attendance_date: selectedDate,
+            attendance_date: today,
             check_in: '',
             check_out: '',
             status: 'present',
@@ -152,7 +190,7 @@ export default function AttendanceList() {
     const handleMarkAttendance = () => {
         setFormData({
             ...formData,
-            attendance_date: selectedDate
+            attendance_date: today
         });
         setMarkDialogOpen(true);
     };
@@ -195,9 +233,9 @@ export default function AttendanceList() {
         try {
             const response = await api.get('/admin/attendances/export', {
                 params: {
-                    start_date: selectedDate,
-                    end_date: selectedDate,
-                    department_id: departmentId || undefined
+                    start_date: appliedFilters.startDate,
+                    end_date: appliedFilters.endDate,
+                    employee_id: appliedFilters.employeeId || undefined
                 }
             });
 
@@ -216,7 +254,7 @@ export default function AttendanceList() {
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `attendance_report_${selectedDate}.csv`;
+                a.download = `attendance_report_${appliedFilters.startDate}_to_${appliedFilters.endDate}.csv`;
                 a.click();
                 window.URL.revokeObjectURL(url);
                 toast.success('Report exported successfully');
@@ -244,12 +282,12 @@ export default function AttendanceList() {
 
     const getStatusBadge = (status) => {
         const statusConfig = {
-            present: { label: 'IN PROGRESS', variant: 'default', className: 'bg-orange-100 text-orange-700 hover:bg-orange-100' },
+            present: { label: 'PRESENT', variant: 'default', className: 'bg-green-100 text-green-700 hover:bg-green-100' },
             absent: { label: 'ABSENT', variant: 'destructive', className: 'bg-red-100 text-red-700 hover:bg-red-100' },
             on_leave: { label: 'ON LEAVE', variant: 'secondary', className: 'bg-yellow-100 text-yellow-700 hover:bg-yellow-100' },
             half_day: { label: 'HALF DAY', variant: 'outline', className: 'bg-blue-100 text-blue-700 hover:bg-blue-100' }
         };
-        const config = statusConfig[status] || statusConfig.present;
+        const config = statusConfig[status] || { label: status?.toUpperCase() || 'N/A', className: 'bg-gray-100 text-gray-700 hover:bg-gray-100' };
         return (
             <Badge className={config.className}>
                 {config.label}
@@ -274,17 +312,6 @@ export default function AttendanceList() {
                     <h1 className="font-bold tracking-tight" style={{ fontSize: '1.5rem' }}>Attendance Management</h1>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                    <div className="flex items-center gap-2">
-                        <Input
-                            type="date"
-                            value={selectedDate}
-                            onChange={(e) => {
-                                setSelectedDate(e.target.value);
-                                setPage(1);
-                            }}
-                            className="w-[160px]"
-                        />
-                    </div>
                     <Button onClick={handleMarkAttendance} className="bg-primary">
                         <UserPlus className="mr-2 h-4 w-4" />
                         Mark Attendance
@@ -298,27 +325,40 @@ export default function AttendanceList() {
 
             <Card>
                 <CardHeader className="space-y-4 p-3">
-                    {/* Filters - Department and Status */}
+                    {/* Filters - Employee, Date Range, Status */}
                     <div className="flex flex-wrap items-center gap-3">
-                        <Select value={departmentId} onValueChange={(value) => {
-                            setDepartmentId(value === 'all' ? '' : value);
-                            setPage(1);
+                        <Select key={`employee-${employeeId || 'empty'}`} value={employeeId} onValueChange={(value) => {
+                            setEmployeeId(value === 'all' ? '' : value);
                         }}>
                             <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder="All Departments" />
+                                <SelectValue placeholder="All Employees" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">All Departments</SelectItem>
-                                {departments?.map((dept) => (
-                                    <SelectItem key={dept.id} value={dept.id.toString()}>
-                                        {dept.department_name}
+                                <SelectItem value="all">All Employees</SelectItem>
+                                {allEmployees?.map((emp) => (
+                                    <SelectItem key={emp.id} value={emp.id.toString()}>
+                                        {emp.full_name}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
-                        <Select value={statusFilter} onValueChange={(value) => {
+                        <div className="flex items-center gap-2">
+                            <Input
+                                type="date"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                                className="w-[145px]"
+                            />
+                            <span className="text-sm text-muted-foreground">to</span>
+                            <Input
+                                type="date"
+                                value={endDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                                className="w-[145px]"
+                            />
+                        </div>
+                        <Select key={`status-${statusFilter || 'empty'}`} value={statusFilter} onValueChange={(value) => {
                             setStatusFilter(value === 'all' ? '' : value);
-                            setPage(1);
                         }}>
                             <SelectTrigger className="w-[150px]">
                                 <SelectValue placeholder="All Status" />
@@ -331,6 +371,12 @@ export default function AttendanceList() {
                                 <SelectItem value="half_day">Half Day</SelectItem>
                             </SelectContent>
                         </Select>
+                        <Button onClick={handleApplyFilter} className="bg-primary">
+                            Filter
+                        </Button>
+                        <Button variant="outline" onClick={handleClearFilter}>
+                            Clear
+                        </Button>
                     </div>
                     {/* DataTable Controls - Show entries and Search */}
                     <DataTableControls
@@ -357,10 +403,10 @@ export default function AttendanceList() {
                                     <thead>
                                         <tr className="border-b bg-muted/50">
                                             <th className="p-3 text-left font-medium text-sm">EMPLOYEE</th>
-                                            <th className="p-3 text-left font-medium text-sm">DEPARTMENT</th>
                                             <th className="p-3 text-left font-medium text-sm">CHECK IN</th>
                                             <th className="p-3 text-left font-medium text-sm">CHECK OUT</th>
                                             <th className="p-3 text-left font-medium text-sm">HOURS</th>
+                                            <th className="p-3 text-left font-medium text-sm">NOTES</th>
                                             <th className="p-3 text-left font-medium text-sm">STATUS</th>
                                             <th className="p-3 text-center font-medium text-sm">ACTION</th>
                                         </tr>
@@ -377,10 +423,10 @@ export default function AttendanceList() {
                                                             <span className="font-medium text-sm">{attendance.employee_name}</span>
                                                         </div>
                                                     </td>
-                                                    <td className="p-3 text-sm">{attendance.department}</td>
                                                     <td className="p-3 text-sm">{attendance.check_in}</td>
                                                     <td className="p-3 text-sm">{attendance.check_out}</td>
-                                                    <td className="p-3 text-sm">{attendance.hours}</td>
+                                                    <td className="p-3 text-sm">{attendance.hours ? Math.abs(parseFloat(attendance.hours)).toFixed(2) : '--'}</td>
+                                                    <td className="p-3 text-sm">{attendance.remarks || '-'}</td>
                                                     <td className="p-3">
                                                         {getStatusBadge(attendance.status)}
                                                     </td>
@@ -408,7 +454,7 @@ export default function AttendanceList() {
                                         ) : (
                                             <tr>
                                                 <td colSpan="7" className="p-8 text-center text-muted-foreground">
-                                                    No attendance records found for {formatDate(selectedDate)}
+                                                    No attendance records found for selected filters
                                                 </td>
                                             </tr>
                                         )}

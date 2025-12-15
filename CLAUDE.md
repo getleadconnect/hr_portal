@@ -280,3 +280,21 @@ Settings (tabs: Users, Job Categories, Departments, Designations,
 - **Auth**: Clear localStorage, check Sanctum config
 - **File Upload**: Verify Spaces credentials in `.env`, check `php.ini` limits
 - **Build**: Clear caches: `rm -rf node_modules/.vite && php artisan cache:clear`
+
+## Telegram Notifications
+
+The system sends notifications via Telegram for:
+- New job applications
+- Application status changes
+
+Service: `app/Services/TelegramService.php`
+
+## Testing Single Features
+
+```bash
+# Run specific test file
+php artisan test --filter=TestClassName
+
+# Run tests with verbose output
+php artisan test -v
+```
