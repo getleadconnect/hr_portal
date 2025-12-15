@@ -50,11 +50,15 @@ routes/web.php                    # Web routes for public job application form
 resources/js/admin/
 ├── components/
 │   ├── ui/                       # Shadcn UI components
-│   ├── layouts/AdminLayout.jsx   # Main layout with navigation
+│   ├── layouts/
+│   │   ├── AdminLayout.jsx       # Layout for admin users (role 1, 2)
+│   │   └── UserLayout.jsx        # Layout for staff users (role 3)
 │   └── DataTableControls.jsx     # Reusable table controls
+├── hooks/useAuth.jsx             # Authentication hook
 ├── pages/                        # Feature-based pages
+│   └── user-dashboard/           # Staff portal pages
 ├── services/api.js               # Axios instance with auth interceptors
-└── App.jsx                       # React Router configuration
+└── App.jsx                       # React Router with role-based routing
 ```
 
 ### Key Patterns
@@ -85,6 +89,22 @@ public static function updateRules($id) { return ['field' => 'required|unique:ta
 const { data, isLoading } = useQuery({
     queryKey: ['resource', page, search, perPage],
     queryFn: () => api.get('/admin/resource', { params: { page, search, per_page: perPage } }).then(r => r.data.data),
+});
+```
+
+**Form Validation with react-hook-form + zod**:
+```jsx
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+const schema = z.object({
+    name: z.string().min(1, 'Name is required'),
+    email: z.string().email('Invalid email'),
+});
+
+const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: zodResolver(schema)
 });
 ```
 
@@ -136,7 +156,9 @@ All endpoints prefixed with `/api/admin/` and require Sanctum authentication (ex
 - `/user/dashboard-stats` - Staff dashboard statistics
 - `/user/profile` - View own profile
 - `/user/attendance` - Own attendance, check-in/check-out
+- `/user/attendance/calendar` - Calendar view of attendance
 - `/user/leave-requests` - Own leave requests
+- `/user/change-password` - Change own password
 
 ### Settings
 - `/notification-settings` - Email/notification configuration
@@ -146,7 +168,9 @@ All endpoints prefixed with `/api/admin/` and require Sanctum authentication (ex
 ### Key Tables & Relationships
 - **employees** - Uses FK IDs: `qualification_id`, `department_id`, `designation_id`
 - **users** - Admin users, optional `employee_id` FK for staff accounts
-  - `role_id`: 1=Super Admin, 2=Admin, 3=Staff (Staff uses UserLayout, others use AdminLayout)
+  - `role_id`: 1=Super Admin, 2=Admin, 3=Staff
+  - Staff users (role 3) are redirected to `/user/*` routes with `UserLayout`
+  - Admin users (role 1, 2) use `/dashboard` routes with `AdminLayout`
 - **attendances** - Employee attendance records
 - **leave_requests** - Leave applications with status workflow
 - **payrolls** - Monthly payroll records
@@ -157,8 +181,8 @@ All endpoints prefixed with `/api/admin/` and require Sanctum authentication (ex
 ### Status Values
 - Active: `1`, Inactive: `0`
 - Leave status: `pending`, `approved`, `rejected`
-- Application status: `New`, `Short Listed`, `Appointed`, `Rejected`, `Not fit for this job`
-  - When status is set to `Rejected`, a `rejection_reason` is required and stored
+- Application status: `New`, `Short Listed`, `Appointed`, `Rejected`, `Not fit for this job`, `Not Interested`, `No vacancies now`, `Not Joined`
+  - When status is set to `Rejected` or `Not fit for this job`, a `rejection_reason` is required and stored
 
 ### Date Formats
 - Database: `Y-m-d`
@@ -211,6 +235,18 @@ toast.success('Success'); toast.error('Error');
 
 ### Confirmation Dialogs
 Use Shadcn `AlertDialog` for destructive actions. Use Shadcn `Dialog` for input modals (e.g., rejection reason modal).
+
+### File Uploads in Forms
+Use `FormData` for multipart/form-data requests:
+```jsx
+const formData = new FormData();
+formData.append('full_name', data.full_name);
+formData.append('profile_image', fileInput.files[0]);
+
+await api.post('/admin/employees', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+});
+```
 
 ## Navigation Structure
 

@@ -26,7 +26,7 @@ import DataTableControls from '../../components/DataTableControls';
 import Pagination from '../../components/Pagination';
 import { Eye, Trash2 } from 'lucide-react';
 
-const STATUS_OPTIONS = ['New', 'Short Listed', 'Appointed', 'Rejected', 'Not fit for this job', 'Not Interested', 'No vacancies now'];
+const STATUS_OPTIONS = ['New', 'Short Listed', 'Appointed', 'Rejected', 'Not fit for this job', 'Not Interested', 'No vacancies now', 'Not Joined'];
 
 const getStatusColor = (status) => {
     switch (status) {
@@ -44,6 +44,8 @@ const getStatusColor = (status) => {
             return 'bg-purple-100 text-purple-700 border-purple-300';
         case 'No vacancies now':
             return 'bg-slate-100 text-slate-700 border-slate-300';
+        case 'Not Joined':
+            return 'bg-pink-100 text-pink-700 border-pink-300';
         default:
             return 'bg-gray-100 text-gray-700 border-gray-300';
     }
