@@ -137,6 +137,9 @@ All endpoints prefixed with `/api/admin/` and require Sanctum authentication (ex
 
 ### Attendance & Leave
 - `/attendances` - Attendance records, bulk marking, export
+  - Supports date range filtering: `start_date`, `end_date`
+  - Supports employee filtering: `employee_id`
+  - Supports status filtering: `status`
 - `/leave-requests` - Leave requests with approve/reject actions
 - `/leave-settings` - Leave type configuration
 
@@ -183,6 +186,18 @@ All endpoints prefixed with `/api/admin/` and require Sanctum authentication (ex
 - Leave status: `pending`, `approved`, `rejected`
 - Application status: `New`, `Short Listed`, `Appointed`, `Rejected`, `Not fit for this job`, `Not Interested`, `No vacancies now`, `Not Joined`
   - When status is set to `Rejected` or `Not fit for this job`, a `rejection_reason` is required and stored
+- Attendance status: `present`, `absent`, `on_leave`, `half_day`
+
+### Attendance Module
+- **Table columns**: Employee, Check In, Check Out, Hours, Notes, Status, Action
+- **Hours**: Always stored and displayed as absolute values (positive numbers)
+- **Filters**: Employee dropdown, Date range (start/end), Status dropdown
+- **Filter buttons**: "Filter" to apply, "Clear" to reset filters
+- **Status badges**:
+  - `present` → Green (PRESENT)
+  - `absent` → Red (ABSENT)
+  - `on_leave` → Yellow (ON LEAVE)
+  - `half_day` → Blue (HALF DAY)
 
 ### Date Formats
 - Database: `Y-m-d`
