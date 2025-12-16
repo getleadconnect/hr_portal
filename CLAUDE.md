@@ -16,7 +16,7 @@ HR Portal application for managing job applications, employee records, attendanc
 ## Development Commands
 
 ```bash
-# Start all services (Laravel, queue, logs, Vite)
+# Start all services (Laravel, queue, logs, Vite) - uses concurrently
 composer dev
 
 # Individual services
@@ -27,7 +27,7 @@ php artisan pail --timeout=0         # Real-time logs
 
 # Build & Quality
 npm run build                        # Production build
-php artisan pint                     # Code formatter
+php artisan pint                     # Code formatter (Laravel Pint)
 php artisan test                     # Run tests
 
 # Database
@@ -129,7 +129,7 @@ All endpoints prefixed with `/api/admin/` and require Sanctum authentication (ex
 - `POST /logout`, `GET /user`, `PUT /profile`, `POST /change-password`
 
 ### Core Resources (CRUD + toggle-status)
-- `/employees` - Employee management (POST uses multipart/form-data)
+- `/employees` - Employee management (POST for create/update uses multipart/form-data)
 - `/users` - Admin users
 - `/applications` - Job applications (includes status workflow with rejection reason)
 - `/job-openings` - Job postings
@@ -304,9 +304,12 @@ The system sends notifications via Telegram for:
 
 Service: `app/Services/TelegramService.php`
 
-## Testing Single Features
+## Testing
 
 ```bash
+# Run all tests
+php artisan test
+
 # Run specific test file
 php artisan test --filter=TestClassName
 

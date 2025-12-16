@@ -57,11 +57,13 @@ class UserController extends Controller
             ->pluck('employee_id')
             ->toArray();
 
-        $employees = Employee::active()
+        // Get all employees (both active and inactive) so dropdown shows options
+        $employees = Employee::orderBy('status', 'DESC') // Active first
             ->orderBy('full_name')
-            ->get(['id', 'full_name', 'email', 'mobile_number'])
+            ->get(['id', 'full_name', 'email', 'mobile_number', 'status'])
             ->map(function ($employee) use ($linkedEmployeeIds) {
                 $employee->has_user = in_array($employee->id, $linkedEmployeeIds);
+                $employee->is_active = $employee->status == 1;
                 return $employee;
             });
 

@@ -184,8 +184,9 @@ export default function UserSettings() {
         }
     };
 
-    // Separate employees into available and already linked groups
-    const availableEmployees = employeesData?.filter(emp => !emp.has_user) || [];
+    // Separate employees into groups: available active, available inactive, already linked
+    const availableActiveEmployees = employeesData?.filter(emp => !emp.has_user && emp.is_active) || [];
+    const availableInactiveEmployees = employeesData?.filter(emp => !emp.has_user && !emp.is_active) || [];
     const linkedEmployees = employeesData?.filter(emp => emp.has_user) || [];
 
     const handleViewUser = async (userId) => {
@@ -280,11 +281,21 @@ export default function UserSettings() {
                                             <SelectValue placeholder="Select an employee" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {availableEmployees.length > 0 && (
+                                            {availableActiveEmployees.length > 0 && (
                                                 <SelectGroup>
-                                                    <SelectLabel className="text-green-600 font-semibold">Available Employees</SelectLabel>
-                                                    {availableEmployees.map((employee) => (
+                                                    <SelectLabel className="text-green-600 font-semibold">Available Employees (Active)</SelectLabel>
+                                                    {availableActiveEmployees.map((employee) => (
                                                         <SelectItem key={employee.id} value={employee.id.toString()}>
+                                                            {employee.full_name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectGroup>
+                                            )}
+                                            {availableInactiveEmployees.length > 0 && (
+                                                <SelectGroup>
+                                                    <SelectLabel className="text-yellow-600 font-semibold">Available Employees (Inactive)</SelectLabel>
+                                                    {availableInactiveEmployees.map((employee) => (
+                                                        <SelectItem key={employee.id} value={employee.id.toString()} className="text-yellow-700">
                                                             {employee.full_name}
                                                         </SelectItem>
                                                     ))}
@@ -303,6 +314,11 @@ export default function UserSettings() {
                                                             {employee.full_name}
                                                         </SelectItem>
                                                     ))}
+                                                </SelectGroup>
+                                            )}
+                                            {availableActiveEmployees.length === 0 && availableInactiveEmployees.length === 0 && linkedEmployees.length === 0 && (
+                                                <SelectGroup>
+                                                    <SelectLabel className="text-gray-500">No employees found</SelectLabel>
                                                 </SelectGroup>
                                             )}
                                         </SelectContent>
