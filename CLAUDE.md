@@ -131,6 +131,7 @@ All endpoints prefixed with `/api/admin/` and require Sanctum authentication (ex
 ### Core Resources (CRUD + toggle-status)
 - `/employees` - Employee management (POST for create/update uses multipart/form-data)
 - `/users` - Admin users
+  - `/users/employees-dropdown` - Returns all employees (active + inactive) for user creation dropdown
 - `/applications` - Job applications (includes status workflow with rejection reason)
 - `/job-openings` - Job postings
 - `/job-categories`, `/departments`, `/designations`, `/qualifications` - Master data
@@ -251,6 +252,14 @@ toast.success('Success'); toast.error('Error');
 ### Confirmation Dialogs
 Use Shadcn `AlertDialog` for destructive actions. Use Shadcn `Dialog` for input modals (e.g., rejection reason modal).
 
+### Employee Selection Dropdown (User Settings)
+The employee dropdown in Settings > Users shows employees grouped by status:
+- **Available Employees (Active)** - Green label, selectable
+- **Available Employees (Inactive)** - Yellow label, selectable
+- **Already Has User Account** - Gray label, disabled (unless editing that user)
+
+API returns `is_active` and `has_user` flags for each employee to enable this grouping.
+
 ### File Uploads in Forms
 Use `FormData` for multipart/form-data requests:
 ```jsx
@@ -295,6 +304,7 @@ Settings (tabs: Users, Job Categories, Departments, Designations,
 - **Auth**: Clear localStorage, check Sanctum config
 - **File Upload**: Verify Spaces credentials in `.env`, check `php.ini` limits
 - **Build**: Clear caches: `rm -rf node_modules/.vite && php artisan cache:clear`
+- **Empty Dropdowns**: If employee dropdowns show empty, check database has records and they're not soft-deleted (`deleted_at` should be NULL)
 
 ## Telegram Notifications
 

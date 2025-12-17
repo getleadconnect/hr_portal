@@ -271,7 +271,7 @@ export default function UserSettings() {
                             <form onSubmit={handleSubmit} className="space-y-3">
                                 {/* Employee Selection Dropdown */}
                                 <div className="space-y-1">
-                                    <Label htmlFor="employee_id">Select Employee (Optional)</Label>
+                                    <Label htmlFor="employee_id">Select Employee *</Label>
                                     <Select
                                         key={`employee-${formData.employee_id || 'empty'}`}
                                         value={formData.employee_id}
