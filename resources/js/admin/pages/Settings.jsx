@@ -17,7 +17,7 @@ const tabs = [
     { id: 'designations', label: 'Designations', icon: UserCog, component: DesignationsSettings },
     { id: 'leave-settings', label: 'Leave Settings', icon: CalendarDays, component: LeaveSettings },
     { id: 'allowances', label: 'Allowances', icon: Percent, component: AllowanceSettings },
-    { id: 'notifications', label: 'Notifications', icon: Bell, component: NotificationsSettings },
+    { id: 'notifications', label: 'Telegram Notifications', icon: Bell, component: NotificationsSettings },
 ];
 
 export default function Settings() {
