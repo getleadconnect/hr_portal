@@ -403,6 +403,7 @@ export default function AttendanceList() {
                                     <thead>
                                         <tr className="border-b bg-muted/50">
                                             <th className="p-3 text-left font-medium text-sm">EMPLOYEE</th>
+                                            <th className="p-3 text-left font-medium text-sm">DATE</th>
                                             <th className="p-3 text-left font-medium text-sm">CHECK IN</th>
                                             <th className="p-3 text-left font-medium text-sm">CHECK OUT</th>
                                             <th className="p-3 text-left font-medium text-sm">HOURS</th>
@@ -423,6 +424,7 @@ export default function AttendanceList() {
                                                             <span className="font-medium text-sm">{attendance.employee_name}</span>
                                                         </div>
                                                     </td>
+                                                    <td className="p-3 text-sm">{formatDate(attendance.attendance_date)}</td>
                                                     <td className="p-3 text-sm">{attendance.check_in}</td>
                                                     <td className="p-3 text-sm">{attendance.check_out}</td>
                                                     <td className="p-3 text-sm">{attendance.hours ? Math.abs(parseFloat(attendance.hours)).toFixed(2) : '--'}</td>
@@ -453,7 +455,7 @@ export default function AttendanceList() {
                                             ))
                                         ) : (
                                             <tr>
-                                                <td colSpan="7" className="p-8 text-center text-muted-foreground">
+                                                <td colSpan="8" className="p-8 text-center text-muted-foreground">
                                                     No attendance records found for selected filters
                                                 </td>
                                             </tr>
@@ -505,40 +507,11 @@ export default function AttendanceList() {
                                         <SelectValue placeholder="Choose employee..." />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {/* Not Marked Group */}
-                                        {employees?.filter(emp => !emp.attendance_id).length > 0 && (
-                                            <>
-                                                <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground bg-muted/50">
-                                                    — Not Marked —
-                                                </div>
-                                                {employees?.filter(emp => !emp.attendance_id).map((emp) => (
-                                                    <SelectItem key={emp.id} value={emp.id.toString()}>
-                                                        {emp.full_name} - {emp.department || 'N/A'}
-                                                    </SelectItem>
-                                                ))}
-                                            </>
-                                        )}
-                                        {/* Already Marked Group */}
-                                        {employees?.filter(emp => emp.attendance_id).length > 0 && (
-                                            <>
-                                                <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground bg-muted/50 mt-1">
-                                                    — Already Marked —
-                                                </div>
-                                                {employees?.filter(emp => emp.attendance_id).map((emp) => (
-                                                    <SelectItem
-                                                        key={emp.id}
-                                                        value={emp.id.toString()}
-                                                        disabled
-                                                        className="text-muted-foreground"
-                                                    >
-                                                        <span className="flex items-center gap-1">
-                                                            <Check className="h-3 w-3 text-green-600" />
-                                                            {emp.full_name} - {emp.department || 'N/A'} ({emp.status ? emp.status.charAt(0).toUpperCase() + emp.status.slice(1) : 'Present'} {emp.check_in || ''})
-                                                        </span>
-                                                    </SelectItem>
-                                                ))}
-                                            </>
-                                        )}
+                                        {employees?.map((emp) => (
+                                            <SelectItem key={emp.id} value={emp.id.toString()}>
+                                                {emp.full_name}
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </div>
