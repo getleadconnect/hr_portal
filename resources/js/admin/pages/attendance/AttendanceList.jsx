@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 import api from '../../services/api';
@@ -67,6 +67,13 @@ export default function AttendanceList() {
 
     const queryClient = useQueryClient();
 
+    // Clear selected employee when attendance date changes
+    useEffect(() => {
+        if (formData.employee_id) {
+            setFormData(prev => ({ ...prev, employee_id: '' }));
+        }
+    }, [formData.attendance_date]);
+
     // Fetch attendance records
     const { data, isLoading } = useQuery({
         queryKey: ['attendances', page, search, perPage, appliedFilters],
@@ -98,11 +105,11 @@ export default function AttendanceList() {
     });
 
     // Fetch active employees for mark attendance dropdown
-    const { data: employees } = useQuery({
-        queryKey: ['employees-active', appliedFilters.startDate],
+    const { data: employees, refetch: refetchEmployees } = useQuery({
+        queryKey: ['employees-active', formData.attendance_date],
         queryFn: async () => {
             const response = await api.get('/admin/attendances/employees', {
-                params: { date: appliedFilters.startDate }
+                params: { date: formData.attendance_date }
             });
             return response.data.data;
         },
@@ -139,9 +146,16 @@ export default function AttendanceList() {
         mutationFn: (data) => api.post('/admin/attendances', data),
         onSuccess: () => {
             queryClient.invalidateQueries(['attendances']);
+            queryClient.invalidateQueries(['employees-active']);
             toast.success('Attendance marked successfully');
-            setMarkDialogOpen(false);
-            resetForm();
+            // Reset only employee selection and times, keep date and status
+            setFormData(prev => ({
+                ...prev,
+                employee_id: '',
+                check_in: '',
+                check_out: '',
+                remarks: ''
+            }));
         },
         onError: (error) => {
             toast.error(error.response?.data?.message || 'Error marking attendance');
@@ -217,6 +231,9 @@ export default function AttendanceList() {
         if (!formData.employee_id) {
             toast.error('Please select an employee');
             return;
+        }
+        if (createMutation.isPending) {
+            return; // Prevent multiple submissions
         }
         createMutation.mutate(formData);
     };
@@ -500,6 +517,7 @@ export default function AttendanceList() {
                             <div className="space-y-2">
                                 <Label className="text-sm font-medium">Employee *</Label>
                                 <Select
+                                    key={`employee-select-${formData.attendance_date}`}
                                     value={formData.employee_id}
                                     onValueChange={(value) => setFormData({ ...formData, employee_id: value })}
                                 >
@@ -507,11 +525,40 @@ export default function AttendanceList() {
                                         <SelectValue placeholder="Choose employee..." />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {employees?.map((emp) => (
-                                            <SelectItem key={emp.id} value={emp.id.toString()}>
-                                                {emp.full_name}
-                                            </SelectItem>
-                                        ))}
+                                        {/* Not Marked Group */}
+                                        {employees?.filter(emp => !emp.attendance_id).length > 0 && (
+                                            <>
+                                                <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground bg-muted/50">
+                                                    — Not Marked —
+                                                </div>
+                                                {employees?.filter(emp => !emp.attendance_id).map((emp) => (
+                                                    <SelectItem key={emp.id} value={emp.id.toString()}>
+                                                        {emp.full_name} - {emp.department || 'N/A'}
+                                                    </SelectItem>
+                                                ))}
+                                            </>
+                                        )}
+                                        {/* Already Marked Group */}
+                                        {employees?.filter(emp => emp.attendance_id).length > 0 && (
+                                            <>
+                                                <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground bg-muted/50 mt-1">
+                                                    — Already Marked —
+                                                </div>
+                                                {employees?.filter(emp => emp.attendance_id).map((emp) => (
+                                                    <SelectItem
+                                                        key={emp.id}
+                                                        value={emp.id.toString()}
+                                                        disabled
+                                                        className="text-muted-foreground"
+                                                    >
+                                                        <span className="flex items-center gap-1">
+                                                            <Check className="h-3 w-3 text-green-600" />
+                                                            {emp.full_name} - {emp.department || 'N/A'} ({emp.status ? emp.status.charAt(0).toUpperCase() + emp.status.slice(1) : 'Present'} {emp.check_in || ''})
+                                                        </span>
+                                                    </SelectItem>
+                                                ))}
+                                            </>
+                                        )}
                                     </SelectContent>
                                 </Select>
                             </div>
