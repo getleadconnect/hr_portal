@@ -28,6 +28,7 @@ import Pagination from '../../components/Pagination';
 import DataTableControls from '../../components/DataTableControls';
 import { Label } from '../../components/ui/label';
 import { Calendar, FileDown, UserPlus, Edit, Trash2, Clock, Check } from 'lucide-react';
+import { TimePicker } from '../../components/ui/time-picker';
 
 export default function AttendanceList() {
     const today = new Date().toISOString().split('T')[0];
@@ -604,36 +605,38 @@ export default function AttendanceList() {
                             </div>
                         </div>
 
-                        {/* Check In, Check Out, Total Hours in single line */}
-                        <div className="grid grid-cols-3 gap-3">
+                        {/* Check In and Check Out Times in single line */}
+                        <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label className="text-sm font-medium">Check In *</Label>
-                                <Input
-                                    type="time"
+                                <Label className="text-sm font-medium">Check In Time *</Label>
+                                <TimePicker
                                     value={formData.check_in}
-                                    onChange={(e) => setFormData({ ...formData, check_in: e.target.value })}
+                                    onChange={(value) => setFormData({ ...formData, check_in: value })}
+                                    placeholder="Select check in time"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-sm font-medium">Check Out</Label>
-                                <Input
-                                    type="time"
+                                <Label className="text-sm font-medium">Check Out Time</Label>
+                                <TimePicker
                                     value={formData.check_out}
-                                    onChange={(e) => setFormData({ ...formData, check_out: e.target.value })}
+                                    onChange={(value) => setFormData({ ...formData, check_out: value })}
+                                    placeholder="Select check out time"
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <Label className="text-sm font-medium">Total Hours</Label>
-                                <div className="bg-muted/50 rounded-md h-10 flex items-center justify-center text-muted-foreground text-sm">
-                                    {formData.check_in && formData.check_out ? (
-                                        (() => {
-                                            const checkIn = new Date(`2000-01-01T${formData.check_in}`);
-                                            const checkOut = new Date(`2000-01-01T${formData.check_out}`);
-                                            const diff = (checkOut - checkIn) / (1000 * 60 * 60);
-                                            return diff > 0 ? `${diff.toFixed(2)} hrs` : '--';
-                                        })()
-                                    ) : '--'}
-                                </div>
+                        </div>
+
+                        {/* Total Hours */}
+                        <div className="space-y-2">
+                            <Label className="text-sm font-medium">Total Hours</Label>
+                            <div className="bg-muted/50 rounded-md h-10 flex items-center justify-center text-muted-foreground text-sm font-medium">
+                                {formData.check_in && formData.check_out ? (
+                                    (() => {
+                                        const checkIn = new Date(`2000-01-01T${formData.check_in}`);
+                                        const checkOut = new Date(`2000-01-01T${formData.check_out}`);
+                                        const diff = (checkOut - checkIn) / (1000 * 60 * 60);
+                                        return diff > 0 ? `${diff.toFixed(2)} hours` : '--';
+                                    })()
+                                ) : '--'}
                             </div>
                         </div>
 
@@ -702,23 +705,38 @@ export default function AttendanceList() {
                                 </Select>
                             </div>
                         </div>
-                        {/* Check In and Check Out */}
+                        {/* Check In and Check Out Times in single line */}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Check In</label>
-                                <Input
-                                    type="time"
+                                <label className="text-sm font-medium">Check In Time</label>
+                                <TimePicker
                                     value={formData.check_in}
-                                    onChange={(e) => setFormData({ ...formData, check_in: e.target.value })}
+                                    onChange={(value) => setFormData({ ...formData, check_in: value })}
+                                    placeholder="Select check in time"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Check Out</label>
-                                <Input
-                                    type="time"
+                                <label className="text-sm font-medium">Check Out Time</label>
+                                <TimePicker
                                     value={formData.check_out}
-                                    onChange={(e) => setFormData({ ...formData, check_out: e.target.value })}
+                                    onChange={(value) => setFormData({ ...formData, check_out: value })}
+                                    placeholder="Select check out time"
                                 />
+                            </div>
+                        </div>
+
+                        {/* Total Hours */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Total Hours</label>
+                            <div className="bg-muted/50 rounded-md h-10 flex items-center justify-center text-muted-foreground text-sm font-medium">
+                                {formData.check_in && formData.check_out ? (
+                                    (() => {
+                                        const checkIn = new Date(`2000-01-01T${formData.check_in}`);
+                                        const checkOut = new Date(`2000-01-01T${formData.check_out}`);
+                                        const diff = (checkOut - checkIn) / (1000 * 60 * 60);
+                                        return diff > 0 ? `${diff.toFixed(2)} hours` : '--';
+                                    })()
+                                ) : '--'}
                             </div>
                         </div>
                         <div className="space-y-2">
