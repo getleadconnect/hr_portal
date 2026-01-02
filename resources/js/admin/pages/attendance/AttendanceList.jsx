@@ -205,7 +205,8 @@ export default function AttendanceList() {
     const handleMarkAttendance = () => {
         setFormData({
             ...formData,
-            attendance_date: today
+            attendance_date: today,
+            status: 'present'
         });
         setMarkDialogOpen(true);
     };
@@ -520,7 +521,7 @@ export default function AttendanceList() {
                                 <Select
                                     key={`employee-select-${formData.attendance_date}`}
                                     value={formData.employee_id}
-                                    onValueChange={(value) => setFormData({ ...formData, employee_id: value })}
+                                    onValueChange={(value) => setFormData({ ...formData, employee_id: value, status: 'present' })}
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Choose employee..." />
@@ -690,7 +691,8 @@ export default function AttendanceList() {
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Status *</label>
                                 <Select
-                                    value={formData.status}
+                                    key={`status-edit-${formData.status || 'present'}`}
+                                    value={formData.status || 'present'}
                                     onValueChange={(value) => setFormData({ ...formData, status: value })}
                                 >
                                     <SelectTrigger>
