@@ -68,12 +68,12 @@ export default function AttendanceList() {
 
     const queryClient = useQueryClient();
 
-    // Clear selected employee when attendance date changes
+    // Clear selected employee when attendance date changes (only for mark attendance dialog, not edit dialog)
     useEffect(() => {
-        if (formData.employee_id) {
+        if (formData.employee_id && markDialogOpen && !editDialogOpen) {
             setFormData(prev => ({ ...prev, employee_id: '' }));
         }
-    }, [formData.attendance_date]);
+    }, [formData.attendance_date, markDialogOpen, editDialogOpen]);
 
     // Fetch attendance records
     const { data, isLoading } = useQuery({
@@ -213,14 +213,15 @@ export default function AttendanceList() {
 
     const handleEdit = (attendance) => {
         setSelectedAttendance(attendance);
-        setFormData({
+        const updatedFormData = {
             employee_id: attendance.employee_id.toString(),
             attendance_date: attendance.attendance_date,
             check_in: attendance.check_in !== '--:--' ? convertTo24Hour(attendance.check_in) : '',
             check_out: attendance.check_out !== '--:--' ? convertTo24Hour(attendance.check_out) : '',
             status: attendance.status,
             remarks: attendance.remarks || ''
-        });
+        };
+        setFormData(updatedFormData);
         setEditDialogOpen(true);
     };
 
@@ -244,6 +245,9 @@ export default function AttendanceList() {
         if (!formData.employee_id) {
             toast.error('Please select an employee');
             return;
+        }
+        if (updateMutation.isPending) {
+            return; // Prevent multiple submissions
         }
         updateMutation.mutate({ id: selectedAttendance.id, data: formData });
     };
