@@ -20,6 +20,7 @@ class Application extends Model
     const STATUS_NOT_INTERESTED = 'Not Interested';
     const STATUS_NO_VACANCIES = 'No vacancies now';
     const STATUS_NOT_JOINED = 'Not Joined';
+    const STATUS_CONTACTED = 'Contacted';
 
     // Available statuses
     public static $statuses = [
@@ -31,6 +32,7 @@ class Application extends Model
         self::STATUS_NOT_INTERESTED,
         self::STATUS_NO_VACANCIES,
         self::STATUS_NOT_JOINED,
+        self::STATUS_CONTACTED,
     ];
 
 	protected $guarded = [];
