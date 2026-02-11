@@ -288,7 +288,7 @@
 											<!-- Step 4: Upload Documents -->
                                     <div class="submit step">
 									
-										<h3 class="main_question">Upload Documents</h3>
+										<h3 class="main_question">Upload Documents (<span style="color: #fb7171;font-size:15px;">Size <100KB</span> )</h3>
                                         <div class="mb-3">
                                             <label for="photo">Upload Your Photo</label>
                                             <input type="file" name="photo" id="photo" class="form-control required" required>
